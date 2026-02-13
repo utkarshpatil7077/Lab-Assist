@@ -78,13 +78,10 @@
 <span class="material-symbols-outlined text-[20px]">report_problem</span>
             Complaints
         </a>
-<a class="sidebar-link flex items-center gap-3 px-4 py-2.5 rounded-lg sidebar-link-inactive hover:bg-[var(--sidebar-hover)] transition-colors font-medium" href="#">
+<a class="sidebar-link flex items-center gap-3 px-4 py-2.5 rounded-lg sidebar-link-inactive hover:bg-[var(--sidebar-hover)] transition-colors font-medium" href="#reports"
+  onclick="setActive(this); showTab('reports')">
 <span class="material-symbols-outlined text-[20px]">bar_chart</span>
             Reports
-        </a>
-<a class="sidebar-link flex items-center gap-3 px-4 py-2.5 rounded-lg sidebar-link-inactive hover:bg-[var(--sidebar-hover)] transition-colors font-medium" href="#">
-<span class="material-symbols-outlined text-[20px]">settings</span>
-            Settings
         </a>
 </nav>
 <div class="p-4 border-t border-[var(--sidebar-border)]">
@@ -496,6 +493,30 @@
         <td class="p-3 text-green-600">Resolved</td>
       </tr>
     </table>
+  </div>
+</div>
+<div id="reports" class="tab hidden p-8 space-y-6">
+
+  <h2 class="text-2xl font-bold text-slate-800">Reports</h2>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+    <div class="bg-white p-6 rounded-xl border shadow-sm">
+      <h3 class="font-semibold mb-2">Monthly Usage Report</h3>
+      <p class="text-sm text-slate-500">Download lab usage summary.</p>
+      <button class="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+        Download PDF
+      </button>
+    </div>
+
+    <div class="bg-white p-6 rounded-xl border shadow-sm">
+      <h3 class="font-semibold mb-2">Device Performance</h3>
+      <p class="text-sm text-slate-500">Analyze device performance trends.</p>
+      <button class="mt-4 px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">
+        View Analytics
+      </button>
+    </div>
+
   </div>
 </div>
 
