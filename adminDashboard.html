@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Admin Dashboard - LabAssist Redesign</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="javascript/script.js"></script>
+<style type="text/tailwindcss">
+        :root {
+            --sidebar-bg: #e0f2ff;
+            --sidebar-border: #cbd5e1;--sidebar-hover: #d1e9ff;
+            --main-bg: #f8fafc;
+            --card-bg: #ffffff;
+            --accent-blue: #2563eb;
+            --corporate-blue: #1e40af;
+            --deep-corporate-blue: #0f172a;
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --border-color: #e2e8f0;
+            --accent-red: #dc2626;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--main-bg);
+            color: var(--text-primary);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .sidebar-link-active {
+            background-color: var(--corporate-blue) !important;
+            color: white !important;
+        }
+        .sidebar-link-inactive {
+            color: var(--deep-corporate-blue);
+        }
+        .sidebar-link-inactive span {
+            color: var(--deep-corporate-blue);
+        }
+        .card-shadow {
+            box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+        }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden">
+<aside class="w-64 bg-[var(--sidebar-bg)] flex flex-col shrink-0 border-r border-[var(--sidebar-border)]">
+<div class="p-6 border-b border-[var(--sidebar-border)]">
+<h1 class="text-xl font-bold text-[var(--deep-corporate-blue)] flex items-center gap-2">
+<span class="material-symbols-outlined text-[var(--accent-blue)]">biotech</span>
+            LabAssist Admin
+        </h1>
+</div>
+<nav class="flex-1 px-4 space-y-1 mt-4 overflow-y-auto">
+<a class="sidebar-link flex items-center gap-3 px-4 py-2.5 rounded-lg sidebar-link-active font-semibold shadow-sm" href="#dashboard"
+   onclick="setActive(this); showTab('dashboard')">
+<span class="material-symbols-outlined text-[20px]">dashboard</span>
+            Dashboard
+        </a>
+<a class="sidebar-link flex items-center gap-3 px-4 py-2.5 rounded-lg sidebar-link-inactive hover:bg-[var(--sidebar-hover)] transition-colors font-medium" href="#users"
+   onclick="setActive(this); showTab('users')">
+<span class="material-symbols-outlined text-[20px]">group</span>
+            Users
+        </a>
+<a class="sidebar-link flex items-center gap-3 px-4 py-2.5 rounded-lg sidebar-link-inactive hover:bg-[var(--sidebar-hover)] transition-colors font-medium" href="#labs"
+    onclick="setActive(this); showTab('labs')">
+<span class="material-symbols-outlined text-[20px]">science</span>
+            Labs
+        </a>
+<a class="sidebar-link flex items-center gap-3 px-4 py-2.5 rounded-lg sidebar-link-inactive hover:bg-[var(--sidebar-hover)] transition-colors font-medium" href="#devices"
+    onclick="setActive(this); showTab('devices')">
+<span class="material-symbols-outlined text-[20px]">devices</span>
+            Devices
+        </a>
+<a class="sidebar-link flex items-center gap-3 px-4 py-2.5 rounded-lg sidebar-link-inactive hover:bg-[var(--sidebar-hover)] transition-colors font-medium" href="#complaints"
+    onclick="setActive(this); showTab('complaints')">
+<span class="material-symbols-outlined text-[20px]">report_problem</span>
+            Complaints
+        </a>
+<a class="sidebar-link flex items-center gap-3 px-4 py-2.5 rounded-lg sidebar-link-inactive hover:bg-[var(--sidebar-hover)] transition-colors font-medium" href="#">
+<span class="material-symbols-outlined text-[20px]">bar_chart</span>
+            Reports
+        </a>
+<a class="sidebar-link flex items-center gap-3 px-4 py-2.5 rounded-lg sidebar-link-inactive hover:bg-[var(--sidebar-hover)] transition-colors font-medium" href="#">
+<span class="material-symbols-outlined text-[20px]">settings</span>
+            Settings
+        </a>
+</nav>
+<div class="p-4 border-t border-[var(--sidebar-border)]">
+<button class="flex items-center gap-3 px-4 py-3 w-full rounded-lg text-[var(--deep-corporate-blue)] hover:bg-red-50 hover:text-red-600 transition-colors font-medium group">
+<span class="material-symbols-outlined text-[20px] group-hover:text-red-600">logout</span>
+            Logout
+        </button>
+</div>
+</aside>
+<main class="flex-1 flex flex-col overflow-auto bg-[var(--main-bg)]">
+<header class="h-16 bg-white border-b border-[var(--border-color)] flex items-center justify-between px-8 shrink-0">
+<div class="flex items-center gap-4 flex-1">
+<h2 class="text-lg font-semibold text-[var(--text-primary)]">Overview</h2>
+<div class="relative w-96 ml-8">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">search</span>
+<input class="w-full bg-slate-50 border border-slate-200 rounded-md pl-10 pr-4 py-1.5 text-sm focus:ring-2 focus:ring-[var(--accent-blue)] focus:border-transparent text-slate-700" placeholder="Search records..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<button class="relative text-slate-500 hover:text-[var(--accent-blue)] transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-0 right-0 w-2 h-2 bg-[var(--accent-red)] rounded-full border-2 border-white"></span>
+</button>
+<div class="flex items-center gap-3 cursor-pointer pl-6 border-l border-slate-200">
+<div class="text-right">
+<p class="text-xs font-bold text-[var(--text-primary)]">Admin User</p>
+<p class="text-[10px] text-slate-500 uppercase tracking-tighter">System Administrator</p>
+</div>
+<div class="w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center border border-blue-200">
+<span class="material-symbols-outlined text-[var(--accent-blue)] text-xl">person</span>
+</div>
+</div>
+</div>
+</header>
+
+<div id="dashboard" class="tab p-8 space-y-8">
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<div class="bg-white border border-[var(--border-color)] p-6 rounded-xl card-shadow">
+<div class="flex justify-between items-start">
+<div>
+<p class="text-slate-500 text-sm font-medium">Total Users</p>
+<h3 class="text-3xl font-bold mt-1 text-[var(--text-primary)]">25</h3>
+</div>
+<div class="p-3 bg-blue-50 rounded-lg">
+<span class="material-symbols-outlined text-[var(--accent-blue)]">group</span>
+</div>
+</div>
+<div class="mt-4 flex items-center text-xs text-emerald-600 font-medium">
+<span class="material-symbols-outlined text-xs mr-1">trending_up</span>
+<span>+12% from last month</span>
+</div>
+</div>
+<div class="bg-white border border-[var(--border-color)] p-6 rounded-xl card-shadow">
+<div class="flex justify-between items-start">
+<div>
+<p class="text-slate-500 text-sm font-medium">Total Labs</p>
+<h3 class="text-3xl font-bold mt-1 text-[var(--text-primary)]">8</h3>
+</div>
+<div class="p-3 bg-indigo-50 rounded-lg">
+<span class="material-symbols-outlined text-indigo-600">science</span>
+</div>
+</div>
+<div class="mt-4 flex items-center text-xs text-slate-400">
+<span>Active research facilities</span>
+</div>
+</div>
+<div class="bg-white border border-[var(--border-color)] p-6 rounded-xl card-shadow border-l-4 border-l-red-500">
+<div class="flex justify-between items-start">
+<div>
+<p class="text-slate-500 text-sm font-medium">Active Complaints</p>
+<h3 class="text-3xl font-bold mt-1 text-[var(--text-primary)]">4</h3>
+</div>
+<div class="p-3 bg-red-50 rounded-lg">
+<span class="material-symbols-outlined text-[var(--accent-red)]">report_problem</span>
+</div>
+</div>
+<div class="mt-4 flex items-center text-xs text-[var(--accent-red)] font-semibold uppercase tracking-wider">
+<span class="material-symbols-outlined text-xs mr-1">warning</span>
+<span>Priority Review Needed</span>
+</div>
+</div>
+</div>
+<div class="bg-white border border-[var(--border-color)] rounded-xl card-shadow overflow-hidden">
+<div class="p-6 border-b border-[var(--border-color)] flex justify-between items-center">
+<h3 class="text-lg font-bold text-[var(--text-primary)]">Recent Activity</h3>
+<button class="text-[var(--accent-blue)] text-sm font-semibold hover:underline px-3 py-1 bg-blue-50 rounded-md">View All Logs</button>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider">
+<tr>
+<th class="px-6 py-4 font-semibold">User / Lab</th>
+<th class="px-6 py-4 font-semibold">Action</th>
+<th class="px-6 py-4 font-semibold text-center">Status</th>
+<th class="px-6 py-4 font-semibold text-right">Time</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-100">
+<tr class="hover:bg-slate-50/50 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center text-xs font-bold border border-slate-200">JS</div>
+<div>
+<p class="text-sm font-bold text-[var(--text-primary)]">John Smith</p>
+<p class="text-xs text-slate-500">Chemistry Lab 02</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 text-sm text-slate-600">Device Calibration Updated</td>
+<td class="px-6 py-4 text-center">
+<span class="px-3 py-1 text-[10px] font-bold rounded-full bg-emerald-100 text-emerald-700 border border-emerald-200 uppercase">Completed</span>
+</td>
+<td class="px-6 py-4 text-right text-xs text-slate-400">2 mins ago</td>
+</tr>
+<tr class="hover:bg-slate-50/50 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center text-xs font-bold border border-slate-200">MA</div>
+<div>
+<p class="text-sm font-bold text-[var(--text-primary)]">Maria Alverez</p>
+<p class="text-xs text-slate-500">Physics Wing</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 text-sm text-slate-600">Reported Hardware Malfunction</td>
+<td class="px-6 py-4 text-center">
+<span class="px-3 py-1 text-[10px] font-bold rounded-full bg-amber-100 text-amber-700 border border-amber-200 uppercase">Pending</span>
+</td>
+<td class="px-6 py-4 text-right text-xs text-slate-400">15 mins ago</td>
+</tr>
+<tr class="hover:bg-slate-50/50 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center text-xs font-bold border border-slate-200">RB</div>
+<div>
+<p class="text-sm font-bold text-[var(--text-primary)]">Robert Brown</p>
+<p class="text-xs text-slate-500">Admin Panel</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 text-sm text-slate-600">New User Registered</td>
+<td class="px-6 py-4 text-center">
+<span class="px-3 py-1 text-[10px] font-bold rounded-full bg-blue-100 text-blue-700 border border-blue-200 uppercase">System Info</span>
+</td>
+<td class="px-6 py-4 text-right text-xs text-slate-400">1 hour ago</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 pb-8">
+<div class="bg-white border border-[var(--border-color)] p-6 rounded-xl card-shadow">
+<h3 class="text-sm font-bold text-[var(--text-primary)] mb-6 flex items-center gap-2">
+<span class="material-symbols-outlined text-slate-400 text-lg">analytics</span>
+                    Device Usage Distribution
+                </h3>
+<div class="h-48 w-full bg-slate-50 rounded-lg flex items-center justify-center border border-dashed border-slate-200">
+<div class="text-center">
+<span class="material-symbols-outlined text-slate-300 text-5xl">pie_chart</span>
+<p class="text-slate-400 text-sm mt-2 font-medium">Visualization: Device Categories</p>
+</div>
+</div>
+</div>
+<div class="bg-white border border-[var(--border-color)] p-6 rounded-xl card-shadow">
+<h3 class="text-sm font-bold text-[var(--text-primary)] mb-6 flex items-center gap-2">
+<span class="material-symbols-outlined text-slate-400 text-lg">health_and_safety</span>
+                    System Health
+                </h3>
+<div class="space-y-5">
+<div>
+<div class="flex justify-between text-xs font-semibold mb-2">
+<span class="text-slate-500">Server Performance</span>
+<span class="text-emerald-600">Optimized (24%)</span>
+</div>
+<div class="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+<div class="h-full bg-emerald-500 w-[24%]"></div>
+</div>
+</div>
+<div>
+<div class="flex justify-between text-xs font-semibold mb-2">
+<span class="text-slate-500">Cloud Storage</span>
+<span class="text-blue-600">62% Capacity</span>
+</div>
+<div class="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+<div class="h-full bg-[var(--accent-blue)] w-[62%]"></div>
+</div>
+</div>
+<div>
+<div class="flex justify-between text-xs font-semibold mb-2">
+<span class="text-slate-500">Memory Load</span>
+<span class="text-red-600">Warning (88%)</span>
+</div>
+<div class="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+<div class="h-full bg-[var(--accent-red)] w-[88%]"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- USERS TAB CONTENT -->
+<div id="users" class="tab hidden p-8 space-y-8">
+
+  <!-- Header -->
+  <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+    <div>
+      <h2 class="text-2xl font-bold text-[var(--text-primary)]">Users</h2>
+      <p class="text-sm text-slate-500">Manage users and roles</p>
+    </div>
+    <div class="flex gap-2">
+      <input
+        type="text"
+        placeholder="Search users..."
+        class="px-4 py-2 border border-[var(--border-color)] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+        oninput="filterUsers(this.value)"
+      />
+      <button
+        class="px-4 py-2 rounded-lg bg-[var(--accent-blue)] text-white text-sm font-semibold hover:opacity-90">
+        + Add User
+      </button>
+    </div>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div class="bg-white border border-[var(--border-color)] p-6 rounded-xl card-shadow">
+      <div class="flex justify-between items-start">
+        <div>
+          <p class="text-slate-500 text-sm font-medium">Total Users</p>
+          <h3 class="text-3xl font-bold mt-1 text-[var(--text-primary)]">25</h3>
+        </div>
+        <div class="p-3 bg-blue-50 rounded-lg">
+          <span class="material-symbols-outlined text-[var(--accent-blue)]">group</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-white border border-[var(--border-color)] p-6 rounded-xl card-shadow">
+      <div class="flex justify-between items-start">
+        <div>
+          <p class="text-slate-500 text-sm font-medium">Active Users</p>
+          <h3 class="text-3xl font-bold mt-1 text-[var(--text-primary)]">18</h3>
+        </div>
+        <div class="p-3 bg-emerald-50 rounded-lg">
+          <span class="material-symbols-outlined text-emerald-600">check_circle</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-white border border-[var(--border-color)] p-6 rounded-xl card-shadow border-l-4 border-l-red-500">
+      <div class="flex justify-between items-start">
+        <div>
+          <p class="text-slate-500 text-sm font-medium">Pending Approvals</p>
+          <h3 class="text-3xl font-bold mt-1 text-[var(--text-primary)]">3</h3>
+        </div>
+        <div class="p-3 bg-red-50 rounded-lg">
+          <span class="material-symbols-outlined text-[var(--accent-red)]">person_alert</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Users Table -->
+  <div class="bg-white border border-[var(--border-color)] rounded-xl card-shadow overflow-hidden">
+    <div class="p-6 border-b border-[var(--border-color)] flex justify-between items-center">
+      <h3 class="text-lg font-bold text-[var(--text-primary)]">All Users</h3>
+      <button class="text-[var(--accent-blue)] text-sm font-semibold hover:underline px-3 py-1 bg-blue-50 rounded-md">
+        Export
+      </button>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="w-full text-left">
+        <thead class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider">
+          <tr>
+            <th class="px-6 py-4 font-semibold">Name</th>
+            <th class="px-6 py-4 font-semibold">Email</th>
+            <th class="px-6 py-4 font-semibold text-center">Role</th>
+            <th class="px-6 py-4 font-semibold text-right">Status</th>
+          </tr>
+        </thead>
+        <tbody id="usersTable" class="divide-y divide-slate-100">
+          <tr class="hover:bg-slate-50/50 transition-colors">
+            <td class="px-6 py-4 text-sm font-bold text-[var(--text-primary)]">John Smith</td>
+            <td class="px-6 py-4 text-sm text-slate-600">john@labassist.com</td>
+            <td class="px-6 py-4 text-center">
+              <span class="px-3 py-1 text-[10px] font-bold rounded-full bg-blue-100 text-blue-700 border border-blue-200 uppercase">Admin</span>
+            </td>
+            <td class="px-6 py-4 text-right">
+              <span class="px-3 py-1 text-[10px] font-bold rounded-full bg-emerald-100 text-emerald-700 border border-emerald-200 uppercase">Active</span>
+            </td>
+          </tr>
+
+          <tr class="hover:bg-slate-50/50 transition-colors">
+            <td class="px-6 py-4 text-sm font-bold text-[var(--text-primary)]">Maria Alverez</td>
+            <td class="px-6 py-4 text-sm text-slate-600">maria@labassist.com</td>
+            <td class="px-6 py-4 text-center">
+              <span class="px-3 py-1 text-[10px] font-bold rounded-full bg-slate-100 text-slate-700 border border-slate-200 uppercase">Student</span>
+            </td>
+            <td class="px-6 py-4 text-right">
+              <span class="px-3 py-1 text-[10px] font-bold rounded-full bg-amber-100 text-amber-700 border border-amber-200 uppercase">Pending</span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+<div id="labs" class="tab hidden p-8 space-y-6">
+  <h2 class="text-2xl font-bold text-slate-800">Labs</h2>
+
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div class="bg-white p-6 rounded-xl border shadow-sm">
+      <p class="text-sm text-slate-500">Total Labs</p>
+      <p class="text-3xl font-bold">8</p>
+      <button class="mt-3 text-blue-600 hover:underline">View Labs</button>
+    </div>
+
+    <div class="bg-white p-6 rounded-xl border shadow-sm">
+      <p class="text-sm text-slate-500">Active Labs</p>
+      <p class="text-3xl font-bold text-green-600">6</p>
+      <button class="mt-3 text-green-600 hover:underline">Active Labs</button>
+    </div>
+
+    <div class="bg-white p-6 rounded-xl border shadow-sm">
+      <p class="text-sm text-slate-500">Maintenance Due</p>
+      <p class="text-3xl font-bold text-red-600">2</p>
+      <button class="mt-3 text-red-600 hover:underline">View Pending</button>
+    </div>
+  </div>
+</div>
+<div id="devices" class="tab hidden p-8 space-y-6">
+  <h2 class="text-2xl font-bold text-slate-800">Devices</h2>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+    <div class="bg-white p-6 rounded-xl border shadow-sm">
+      <p class="text-sm text-slate-500">Total Devices</p>
+      <p class="text-3xl font-bold">42</p>
+      <button class="mt-3 text-blue-600 hover:underline">Manage Devices</button>
+    </div>
+
+    <div class="bg-white p-6 rounded-xl border shadow-sm">
+      <p class="text-sm text-slate-500">Faulty Devices</p>
+      <p class="text-3xl font-bold text-red-600">5</p>
+      <button class="mt-3 text-red-600 hover:underline">View Issues</button>
+    </div>
+
+  </div>
+
+  <div class="bg-white border rounded-xl mt-6 overflow-hidden">
+    <div class="p-4 border-b font-semibold">Recent Devices</div>
+    <table class="w-full text-sm">
+      <tr class="border-b">
+        <th class="p-3 text-left">Device</th>
+        <th class="p-3">Lab</th>
+        <th class="p-3">Status</th>
+      </tr>
+      <tr class="border-b">
+        <td class="p-3">Microscope #12</td>
+        <td class="p-3">Chemistry Lab</td>
+        <td class="p-3 text-green-600">Working</td>
+      </tr>
+      <tr>
+        <td class="p-3">Oscilloscope #3</td>
+        <td class="p-3">Physics Lab</td>
+        <td class="p-3 text-red-600">Faulty</td>
+      </tr>
+    </table>
+  </div>
+</div>
+<div id="complaints" class="tab hidden p-8 space-y-6">
+  <h2 class="text-2xl font-bold text-slate-800">Complaints</h2>
+
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div class="bg-white p-6 rounded-xl border shadow-sm">
+      <p class="text-sm text-slate-500">Open Complaints</p>
+      <p class="text-3xl font-bold text-red-600">5</p>
+    </div>
+
+    <div class="bg-white p-6 rounded-xl border shadow-sm">
+      <p class="text-sm text-slate-500">Resolved</p>
+      <p class="text-3xl font-bold text-green-600">12</p>
+    </div>
+
+    <div class="bg-white p-6 rounded-xl border shadow-sm">
+      <p class="text-sm text-slate-500">High Priority</p>
+      <p class="text-3xl font-bold text-orange-500">2</p>
+    </div>
+  </div>
+
+  <div class="bg-white border rounded-xl mt-6 overflow-hidden">
+    <div class="p-4 border-b font-semibold">Recent Complaints</div>
+    <table class="w-full text-sm">
+      <tr class="border-b">
+        <th class="p-3 text-left">Issue</th>
+        <th class="p-3">Lab</th>
+        <th class="p-3">Status</th>
+      </tr>
+      <tr class="border-b">
+        <td class="p-3">Microscope not working</td>
+        <td class="p-3">Bio Lab</td>
+        <td class="p-3 text-red-600">Open</td>
+      </tr>
+      <tr>
+        <td class="p-3">PC not booting</td>
+        <td class="p-3">Computer Lab</td>
+        <td class="p-3 text-green-600">Resolved</td>
+      </tr>
+    </table>
+  </div>
+</div>
+
+
+</main>
+
+</body></html>

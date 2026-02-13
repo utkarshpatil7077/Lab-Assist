@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Create New Organization - LabManager Pro</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<script src="javascript/script.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0F52BA",
+                        "primary-dark": "#0A3D8B",
+                        "accent": "#4FACFE",
+                        "surface": "#F8FAFC",
+                    },
+                    fontFamily: {
+                        "sans": ["Plus Jakarta Sans", "Inter", "sans-serif"]
+                    },
+                    boxShadow: {
+                        'premium': '0 25px 50px -12px rgba(0, 0, 0, 0.08), 0 10px 20px -5px rgba(0, 0, 0, 0.03)',
+                        'glow': '0 0 20px rgba(15, 82, 186, 0.35)',
+                    }
+                },
+            },
+        }
+    </script>
+<style type="text/tailwindcss">
+        @layer base {
+            body {
+                @apply bg-[#F1F5F9] text-slate-900 font-sans antialiased;
+            }
+        }
+        .hero-pattern {
+            background-color: #0F52BA;
+            background-image: radial-gradient(circle at 2px 2px, rgba(255,255,255,0.05) 1px, transparent 0);
+            background-size: 32px 32px;
+        }
+        .glass-panel {
+            @apply bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl;
+        }
+        .form-input-custom {
+            @apply w-full rounded-xl border-transparent bg-slate-100 px-11 py-3.5 text-slate-700 placeholder:text-slate-400 focus:border-primary focus:ring-4 focus:ring-primary/10 focus:bg-white outline-none transition-all duration-300 text-sm;
+        }
+        .form-label-custom {
+            @apply text-slate-700 text-[13px] font-bold mb-2 flex items-center gap-2;
+        }
+        .input-icon {
+            @apply absolute left-4 top-[3.2rem] text-slate-400 text-xl transition-colors pointer-events-none;
+        }
+        .group:focus-within .input-icon {
+            @apply text-primary;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col overflow-x-hidden">
+<div class="flex-1 flex flex-col lg:flex-row h-screen overflow-hidden">
+<aside class="hidden lg:flex flex-col justify-between w-[40%] hero-pattern p-12 text-white relative">
+<div class="absolute inset-0 bg-gradient-to-br from-primary via-primary-dark to-[#05214d] opacity-90"></div>
+<div class="relative z-10">
+<div class="flex items-center gap-3">
+<div class="w-11 h-11 bg-white rounded-xl flex items-center justify-center text-primary shadow-xl">
+<span class="material-symbols-outlined text-[28px] font-bold">biotech</span>
+</div>
+<h2 class="text-2xl font-extrabold tracking-tight">LabManager <span class="text-accent">Pro</span></h2>
+</div>
+</div>
+<div class="relative z-10 max-w-md">
+<h1 class="text-4xl xl:text-5xl font-extrabold leading-tight mb-6">
+                Next Generation Laboratory Infrastructure.
+            </h1>
+<p class="text-blue-100 text-lg leading-relaxed opacity-80">
+                Join hundreds of world-class research facilities managing their operations with our enterprise-grade ecosystem.
+            </p>
+<div class="mt-12 space-y-6">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-accent">verified_user</span>
+</div>
+<span class="text-sm font-medium">HIPAA &amp; GDPR Compliant Security</span>
+</div>
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-accent">query_stats</span>
+</div>
+<span class="text-sm font-medium">Real-time Advanced Analytics</span>
+</div>
+</div>
+</div>
+<div class="relative z-10 pt-8 border-t border-white/10">
+<p class="text-xs font-semibold uppercase tracking-widest text-blue-300 mb-4">Trusted Global Partners</p>
+<div class="flex gap-8 opacity-60">
+<span class="material-symbols-outlined text-3xl">science</span>
+<span class="material-symbols-outlined text-3xl">hub</span>
+<span class="material-symbols-outlined text-3xl">medical_services</span>
+<span class="material-symbols-outlined text-3xl">genetics</span>
+</div>
+</div>
+</aside>
+<main class="flex-1 bg-white lg:bg-[#F8FAFC] overflow-y-auto custom-scrollbar">
+<div class="max-w-3xl mx-auto px-6 py-12 lg:py-16">
+<div class="flex lg:hidden items-center gap-3 mb-10">
+<div class="w-10 h-10 bg-primary rounded-lg flex items-center justify-center text-white">
+<span class="material-symbols-outlined text-[24px]">biotech</span>
+</div>
+<h2 class="text-xl font-bold tracking-tight">LabManager <span class="text-primary">Pro</span></h2>
+</div>
+<div class="mb-10">
+<div class="flex items-center justify-between mb-4">
+<a class="text-sm font-bold text-primary flex items-center gap-1 hover:gap-2 transition-all" href="#">
+<span class="material-symbols-outlined text-base">arrow_back</span> Back to Portal
+                    </a>
+</div>
+<h2 class="text-3xl font-extrabold text-slate-900 tracking-tight">Establish Your Organization</h2>
+<p class="text-slate-500 mt-2">Configure your secure laboratory environment in minutes.</p>
+</div>
+<div class="bg-white p-8 lg:p-10 rounded-[2rem] shadow-premium border border-slate-100">
+<form class="space-y-10">
+<div>
+<div class="flex items-center gap-3 mb-8">
+<div class="w-10 h-10 rounded-xl bg-blue-50 text-primary flex items-center justify-center">
+<span class="material-symbols-outlined font-bold">corporate_fare</span>
+</div>
+<h3 class="text-lg font-bold text-slate-800">Organization Identity</h3>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+<div class="relative group">
+<label class="form-label-custom">Organization Name</label>
+<span class="material-symbols-outlined input-icon">apartment</span>
+<input class="form-input-custom" id="organizationName" placeholder="e.g. BioTech Research Labs" type="text"/>
+</div>
+<div class="relative group">
+<label class="form-label-custom">Organization Code</label>
+<span class="material-symbols-outlined input-icon">tag</span>
+<input class="form-input-custom" id="organizationCode" placeholder="e.g. BRL-2024" type="text"/>
+</div>
+</div>
+</div>
+<div>
+<div class="flex items-center gap-3 mb-8">
+<div class="w-10 h-10 rounded-xl bg-blue-50 text-primary flex items-center justify-center">
+<span class="material-symbols-outlined font-bold">admin_panel_settings</span>
+</div>
+<h3 class="text-lg font-bold text-slate-800">Lead Administrator</h3>
+</div>
+<div class="space-y-8">
+<div class="relative group">
+<label class="form-label-custom">Full Name</label>
+<span class="material-symbols-outlined input-icon">person</span>
+<input class="form-input-custom" id="name" placeholder="Enter full name of administrator" type="text"/>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+<div class="relative group">
+<label class="form-label-custom">Professional Email</label>
+<span class="material-symbols-outlined input-icon">mail</span>
+<input class="form-input-custom" id="email" placeholder="admin@organization.com" type="email"/>
+</div>
+<div class="relative group">
+    <label class="form-label-custom">Level of Admin</label>
+    <span class="material-symbols-outlined input-icon">leaderboard</span>
+    <select class="form-input-custom" id="level" placeholder="Select Level">
+        <option class="orgAdmin">Organization Admin</option>
+        <option class="deptAdmin">Department Admin</option>
+    </select>
+</div>
+</div>
+<div class="relative group w-full">
+  
+  <div class="flex items-end gap-4 mt-1">
+
+    <button id="otpButton" class="flex w-full justify-center items-center gap-2 rounded-md bg-primary px-4 py-3 text-sm font-bold text-white shadow-lg hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all" type="submit" onclick="verifyOTP(event)">
+      <span class="tracking-wide">Get OTP</span>
+    </button>
+    
+  </div>
+</div>
+<div id="otp" class="relative group w-full hidden">
+  <label class="form-label-custom">Enter OTP</label>
+  
+  <div class="flex items-end gap-4 mt-1">
+    
+    <div class="relative flex-1">
+      <input class="form-input-custom w-full pl-10" placeholder="OTP" type="text"/>
+    </div>
+
+    <button id="verifyOtpbtn" class="flex w-1/2 justify-center items-center gap-2 rounded-md bg-primary px-4 py-3 text-sm font-bold text-white shadow-lg hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all" type="submit">
+      <span class="tracking-wide">Submit</span>
+    </button>
+    
+  </div>
+</div>
+</div>
+</div>
+<div>
+<div class="flex items-center gap-3 mb-8">
+<div class="w-10 h-10 rounded-xl bg-blue-50 text-primary flex items-center justify-center">
+<span class="material-symbols-outlined font-bold">lock</span>
+</div>
+<h3 class="text-lg font-bold text-slate-800">Security Configuration</h3>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+<div class="relative group">
+<label class="form-label-custom">Master Password</label>
+<span class="material-symbols-outlined input-icon">key</span>
+<input class="form-input-custom" placeholder="••••••••" type="password"/>
+</div>
+<div class="relative group">
+<label class="form-label-custom">Confirm Password</label>
+<span class="material-symbols-outlined input-icon">verified</span>
+<input class="form-input-custom" placeholder="••••••••" type="password"/>
+</div>
+</div>
+</div>
+<div class="pt-6">
+<button class="w-full bg-gradient-to-r from-primary to-primary-dark hover:from-primary-dark hover:to-primary text-white font-bold py-4 rounded-2xl shadow-premium hover:shadow-glow transition-all duration-300 flex items-center justify-center gap-3 active:scale-[0.98]" type="submit" onclick="location.href='./adminDashboard.html'">
+<span class="tracking-wide">Create Organization Account</span>
+<span class="material-symbols-outlined text-2xl">arrow_forward</span>
+</button>
+<div class="mt-8 text-center">
+<p class="text-slate-500 text-sm font-medium">
+                                Already have an account? 
+                                <a class="text-primary font-bold hover:underline decoration-2 underline-offset-4 ml-1" href="#">Sign in to Dashboard</a>
+</p>
+</div>
+</div>
+</form>
+</div>
+<div class="mt-12 text-center">
+<p class="text-slate-400 text-xs font-semibold tracking-widest uppercase">
+                    © 2024 LabManager Pro • Enterprise Management System
+                </p>
+</div>
+</div>
+</main>
+</div>
+
+</body></html>
