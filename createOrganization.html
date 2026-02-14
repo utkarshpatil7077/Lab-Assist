@@ -5,7 +5,14 @@
 <title>Create New Organization - LabManager Pro</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
-<script src="javascript/script.js"></script>
+<!-- 1️⃣ Supabase library (CDN) -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<!-- 2️⃣ Your Supabase client config -->
+<script src="javascript/supabase.js"></script>
+
+<!-- 3️⃣ Your main JS logic -->
+ <script src="javascript/script.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
 <script id="tailwind-config">
         tailwind.config = {
@@ -55,8 +62,15 @@
         .group:focus-within .input-icon {
             @apply text-primary;
         }
+        .readonly {
+  @apply opacity-60 cursor-not-allowed;
+}
+
     </style>
 </head>
+<!-- Screen Lock Overlay -->
+<div id="lockOverlay" class="hidden fixed inset-0 backdrop-blur-sm bg-black/20 z-40"></div>
+
 <body class="min-h-screen flex flex-col overflow-x-hidden">
 <div class="flex-1 flex flex-col lg:flex-row h-screen overflow-hidden">
 <aside class="hidden lg:flex flex-col justify-between w-[40%] hero-pattern p-12 text-white relative">
@@ -118,8 +132,10 @@
 <h2 class="text-3xl font-extrabold text-slate-900 tracking-tight">Establish Your Organization</h2>
 <p class="text-slate-500 mt-2">Configure your secure laboratory environment in minutes.</p>
 </div>
-<div class="bg-white p-8 lg:p-10 rounded-[2rem] shadow-premium border border-slate-100">
-<form class="space-y-10">
+
+<div class="relative bg-white p-8 lg:p-10 rounded-[2rem] shadow-premium border border-slate-100">
+
+<form id="form" class="space-y-10">
 <div>
 <div class="flex items-center gap-3 mb-8">
 <div class="w-10 h-10 rounded-xl bg-blue-50 text-primary flex items-center justify-center">
@@ -169,33 +185,47 @@
 </div>
 </div>
 <div class="relative group w-full">
-  
   <div class="flex items-end gap-4 mt-1">
+  <button
+    id="otpButton"
+    type="button"
+    onclick="verifyOTP(event)"
+    class="relative flex w-full items-center justify-center gap-2 rounded-md bg-primary px-4 py-3 text-sm font-bold text-white shadow-lg transition-all hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-primary/50 disabled:cursor-not-allowed disabled:opacity-70"
+    aria-busy="false"
+  >
+    <span id="otpBtnText" class="tracking-wide">Get Confirmation Link</span>
 
-    <button id="otpButton" class="flex w-full justify-center items-center gap-2 rounded-md bg-primary px-4 py-3 text-sm font-bold text-white shadow-lg hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all" type="submit" onclick="verifyOTP(event)">
-      <span class="tracking-wide">Get OTP</span>
-    </button>
-    
-  </div>
-</div>
-<div id="otp" class="relative group w-full hidden">
-  <label class="form-label-custom">Enter OTP</label>
-  
-  <div class="flex items-end gap-4 mt-1">
-    
-    <div class="relative flex-1">
-      <input class="form-input-custom w-full pl-10" placeholder="OTP" type="text"/>
-    </div>
+    <!-- Tailwind Spinner -->
+    <span id="circleLoaderOTP"
+  class="hidden h-5 w-5 animate-spin rounded-full border-2 border-current border-t-transparent">
+</span>
 
-    <button id="verifyOtpbtn" class="flex w-1/2 justify-center items-center gap-2 rounded-md bg-primary px-4 py-3 text-sm font-bold text-white shadow-lg hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all" type="submit">
-      <span class="tracking-wide">Submit</span>
-    </button>
-    
-  </div>
+  </button>
+</div>
+
+</div>
+<div class="mt-4">
+  <button
+    id="googleLoginBtn"
+    type="button"
+    onclick="loginWithGoogle()"
+    class="flex w-full items-center justify-center gap-3 rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 shadow-sm transition-all hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-primary/40"
+  >
+    <!-- Google Icon -->
+    <svg class="h-5 w-5" viewBox="0 0 48 48">
+      <path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.303C33.651 32.45 29.197 35 24 35c-6.075 0-11-4.925-11-11s4.925-11 11-11c2.823 0 5.401 1.043 7.389 2.751l5.657-5.657C33.686 6.186 28.986 4 24 4 12.955 4 4 12.955 4 24s8.955 20 20 20 20-8.955 20-20c0-1.341-.138-2.651-.389-3.917z"/>
+      <path fill="#FF3D00" d="M6.306 14.691l6.571 4.819C14.73 16.108 19.01 13 24 13c2.823 0 5.401 1.043 7.389 2.751l5.657-5.657C33.686 6.186 28.986 4 24 4c-7.682 0-14.344 4.28-17.694 10.691z"/>
+      <path fill="#4CAF50" d="M24 44c4.98 0 9.606-1.905 13.064-5.006l-6.038-5.104C29.062 35.091 26.651 36 24 36c-5.176 0-9.571-3.285-11.166-7.879l-6.523 5.02C9.656 39.748 16.354 44 24 44z"/>
+      <path fill="#1976D2" d="M43.611 20.083H42V20H24v8h11.303c-1.043 2.918-3.132 5.39-5.877 6.89l.003-.002 6.038 5.104C35.31 39.882 44 34 44 24c0-1.341-.138-2.651-.389-3.917z"/>
+    </svg>
+
+    <span>Continue with Google</span>
+  </button>
+</div>
+
 </div>
 </div>
-</div>
-<div>
+<div id="password" class="hidden">
 <div class="flex items-center gap-3 mb-8">
 <div class="w-10 h-10 rounded-xl bg-blue-50 text-primary flex items-center justify-center">
 <span class="material-symbols-outlined font-bold">lock</span>
@@ -228,6 +258,7 @@
 </div>
 </div>
 </form>
+</div>
 </div>
 <div class="mt-12 text-center">
 <p class="text-slate-400 text-xs font-semibold tracking-widest uppercase">
