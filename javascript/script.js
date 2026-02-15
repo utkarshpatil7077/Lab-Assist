@@ -2,7 +2,6 @@ function verifyOTP(event) {
   event.preventDefault();
 
   lockCreateOrgUI();
-  //showCircleLoader();
 
   try{
     document.getElementById("password").classList.remove("hidden");
@@ -32,12 +31,12 @@ function verifyOTP(event) {
     console.log("verifyOTP completed !");
   }catch (err) {
      unlockCreateOrgUI();
-     showCircleLoader();
      alert("Something went wrong");
   }
 }
 
 function lockCreateOrgUI() {
+  showCircleLoader();
   const form = document.querySelector("form");
   const inputs = form.querySelectorAll("input, select");
   const labels = form.querySelectorAll("label");
@@ -59,6 +58,7 @@ function lockCreateOrgUI() {
 }
 
 function unlockCreateOrgUI() {
+  hideCircleLoader();
   const form = document.querySelector("form");
   const inputs = form.querySelectorAll("input, select");
   const labels = form.querySelectorAll("label");
@@ -122,6 +122,7 @@ async function sendOTPToEmail(email) {
     
     const { data, error } = await window.supabaseClient.auth.signInWithOtp({
       email,
+      password,
       options: {
       emailRedirectTo: "http://localhost:5500/createOrganization.html"
     }
@@ -130,6 +131,7 @@ async function sendOTPToEmail(email) {
 
   if (error) {
     alert("Failed to send OTP: " + error.message);
+    unlockCreateOrgUI();
   } else {
     alert("OTP link sent to email. Check inbox/spam.");
   }
@@ -141,18 +143,33 @@ async function sendOTPToEmail(email) {
   if (!session) return;
 
   const user = session.user;
+  let compare = document.getElementById("level")?.value ;
+  let role ;
+  if(compare == "Organization Admin"){
+    role = "Organization Admin" ;
+  }
+  else if(compare == "Department Admin"){
+    role = "Department Admin" ;
+  }
 
-  const { error } = await window.supabaseClient
+  const { errorAdmin } = await window.supabaseClient
     .from("admins")
     .upsert({
-      id: user.id,
-      email: user.email,
-      full_name: document.getElementById("name")?.value || null,
-      role: document.getElementById("level")?.value || "org_admin",
-      organization_name: document.getElementById("organizationName")?.value || null
+      admin_name: document.getElementById("name")?.value || null,
+      admin_level: role ,
+      organization_name: document.getElementById("organizationName")?.value || null,
+      //fcm_token
+      is_active: true
     });
-
-  if (error) {
+    
+  const {errorOrganization} = await window.supabaseClient
+    .from("organizations")
+    .upsert({
+      name: document.getElementById("organizationName")?.value || null,
+      code: document.getElementById("organizationCode")?.value ,
+      is_active: true 
+    })
+  if (errorAdmin || errorOrganization) {
     console.error("DB Error:", error.message);
     alert("❌ Failed to save user data");
   } else {
@@ -195,6 +212,8 @@ async function sendOTPToEmail(email) {
 async function loginWithGoogle(){
   const { data, error } = await window.supabaseClient.auth.signInWithOAuth({
       provider: "google",
+      email,
+      password,
       options: {
         redirectTo: window.location.origin + "/createOrganization.html"
       }
