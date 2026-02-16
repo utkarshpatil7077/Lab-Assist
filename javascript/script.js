@@ -23,6 +23,15 @@ async function verifyOTP(event) {
       unlockCreateOrgUI();
       return;
     }
+    // Save form data before redirect
+    localStorage.setItem("pendingOrgData", JSON.stringify({
+      org_name: window.organizationName,
+      org_code: window.organizationCode,
+      admin_name: window.Username,
+      email: window.email,
+      level: window.level
+    }));
+
 
     // ✅ All validations passed — send OTP / magic link
     await sendOTPToEmail(window.email);
@@ -90,11 +99,20 @@ async function sendOTPToEmail(email) {
   const urlParams = new URLSearchParams(window.location.search);
   const type = urlParams.get('type');
 
-  if (session && type === "magiclink") {
-    document.getElementById("password").classList.remove("hidden");
-    await storeData(session);
+  if (session && (type === "magiclink" || type === "google")) {
+
+    const savedData = localStorage.getItem("pendingOrgData");
+
+    if (savedData) {
+      const orgData = JSON.parse(savedData);
+      await storeData(session, orgData);
+
+      localStorage.removeItem("pendingOrgData");
+    }
   }
 })();
+
+
 
 //----------------- Call Edge Function -----------------
 async function storeData(session) {
@@ -104,9 +122,15 @@ async function storeData(session) {
 
     const accessToken = session.access_token;
     console.log("DEBUG: Org Name:", document.getElementById("organizationName")?.value);
-console.log("DEBUG: Org Code:", document.getElementById("organizationCode")?.value);
-console.log("DEBUG: Admin Name:", document.getElementById("name")?.value);
-
+  console.log("DEBUG: Org Code:", document.getElementById("organizationCode")?.value);
+  console.log("DEBUG: Admin Name:", document.getElementById("name")?.value);
+  let org_name = document.getElementById("organizationName").value.trim();
+  let org_code = document.getElementById("organizationCode").value.trim();
+  let admin_name = document.getElementById("name").value.trim();
+if(!org_name || !org_code || !admin_name){
+  console.log("org name: " + org_name + ", org code: " + org_code + " admin name : "+ admin_name) ;
+    alert("Missing required fields");
+}
 
     const response = await fetch("https://pbcnboxtlrymczzpppyl.supabase.co/functions/v1/create-organisation", {
       method: "POST",
@@ -115,9 +139,9 @@ console.log("DEBUG: Admin Name:", document.getElementById("name")?.value);
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        org_name: document.getElementById("organizationName").value.trim(),
-        org_code: document.getElementById("organizationCode").value.trim(),
-        admin_name: document.getElementById("name").value.trim()
+        org_name: orgData.org_name,
+        org_code: orgData.org_code,
+        admin_name: orgData.admin_name
       })
     });
 
@@ -141,18 +165,29 @@ console.log("DEBUG: Admin Name:", document.getElementById("name")?.value);
 //----------------- Google Sign-In Integration -----------------
 async function loginWithGoogle() {
   try {
-    const { data, error } = await window.supabaseClient.auth.signInWithOAuth({
+
+    // Save form data first
+    const formData = {
+      org_name: document.getElementById("organizationName").value.trim(),
+      org_code: document.getElementById("organizationCode").value.trim(),
+      admin_name: document.getElementById("name").value.trim(),
+      email: document.getElementById("email").value.trim(),
+      level: document.getElementById("level").value
+    };
+
+    localStorage.setItem("pendingOrgData", JSON.stringify(formData));
+
+    const { error } = await window.supabaseClient.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: window.location.origin + "/createOrganization.html?type=magiclink"
+        redirectTo: window.location.origin + "/createOrganization.html?type=google"
       }
     });
 
     if (error) throw error;
 
-    // After redirect & confirmation, store data will be called automatically
   } catch (err) {
     alert(err.message);
-    console.error(err);
   }
 }
+
