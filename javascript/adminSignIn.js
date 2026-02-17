@@ -105,7 +105,7 @@ async function verifyOTP(email, otpInput) {
   if (data.success) {
     alert("OTP Verified ✅");
     document.getElementById("password").classList.remove("hidden") ;
-    //showCircleLoader("loadingSubmit" ,"otpSubmmit") ;
+    hideCircleLoader("loadingSubmit" ,"otpSubmmit") ;
   } else {
     alert(data.error);
     hideCircleLoader("loadingSubmit" ,"otpSubmmit");
