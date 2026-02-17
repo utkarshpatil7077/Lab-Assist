@@ -1,6 +1,7 @@
 function sendOTP(){
     const name = document.getElementById("AdminName").value.trim() ;
     const email = document.getElementById("email").value.trim();
+    window.adminEmail = document.getElementById("email").value.trim();
     document.getElementById("otpBtn").disabled = true ;
 
     if(!email || !name){
@@ -71,7 +72,7 @@ function verifySendOTP(){
     }
     else{
         try{
-            verifyOTP(email , otp) ;
+            verifyOTP(window.adminEmail , otp) ;
         }
         catch(err){
             alert(err.message) ;
@@ -80,6 +81,7 @@ function verifySendOTP(){
 }
 
 async function verifyOTP(email, otpInput) {
+  console.log("At verify Email : "+email) ;
   const response = await fetch(
     "https://pbcnboxtlrymczzpppyl.supabase.co/functions/v1/handle-otp",
     {
@@ -103,12 +105,10 @@ async function verifyOTP(email, otpInput) {
   if (data.success) {
     alert("OTP Verified ✅");
     document.getElementById("password").classList.remove("hidden") ;
-    showCircleLoader("loadingSubmit" ,"otpSubmmit") ;
+    //showCircleLoader("loadingSubmit" ,"otpSubmmit") ;
   } else {
-    console.log("Error : "+data.error) ;
-    document.getElementById("password").classList.remove("hidden") ;
-    showCircleLoader("loadingSubmit" ,"otpSubmmit") ;
     alert(data.error);
+    hideCircleLoader("loadingSubmit" ,"otpSubmmit");
   }
 }
 //----------------- Lock/Unlock UI -----------------
