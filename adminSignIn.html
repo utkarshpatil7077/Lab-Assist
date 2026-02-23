@@ -157,6 +157,24 @@
 <input id="email" class="form-input-custom" placeholder="s.johnson@lab.org" required="" type="email"/>
 </div>
 </div>
+<div class="mt-4">
+  <button
+    id="googleLoginBtn"
+    type="button"
+    onclick="loginWithGoogle()"
+    class="flex w-full items-center justify-center gap-3 rounded-md border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 shadow-sm transition-all hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-primary/40"
+  >
+    <!-- Google Icon -->
+    <svg class="h-5 w-5" viewBox="0 0 48 48">
+      <path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.303C33.651 32.45 29.197 35 24 35c-6.075 0-11-4.925-11-11s4.925-11 11-11c2.823 0 5.401 1.043 7.389 2.751l5.657-5.657C33.686 6.186 28.986 4 24 4 12.955 4 4 12.955 4 24s8.955 20 20 20 20-8.955 20-20c0-1.341-.138-2.651-.389-3.917z"/>
+      <path fill="#FF3D00" d="M6.306 14.691l6.571 4.819C14.73 16.108 19.01 13 24 13c2.823 0 5.401 1.043 7.389 2.751l5.657-5.657C33.686 6.186 28.986 4 24 4c-7.682 0-14.344 4.28-17.694 10.691z"/>
+      <path fill="#4CAF50" d="M24 44c4.98 0 9.606-1.905 13.064-5.006l-6.038-5.104C29.062 35.091 26.651 36 24 36c-5.176 0-9.571-3.285-11.166-7.879l-6.523 5.02C9.656 39.748 16.354 44 24 44z"/>
+      <path fill="#1976D2" d="M43.611 20.083H42V20H24v8h11.303c-1.043 2.918-3.132 5.39-5.877 6.89l.003-.002 6.038 5.104C35.31 39.882 44 34 44 24c0-1.341-.138-2.651-.389-3.917z"/>
+    </svg>
+
+    <span>Continue with Google</span>
+  </button>
+</div>
 <div class="relative group">
     <div class="pt-6">
 <button id="otpBtn" class="w-full bg-primary hover:bg-primary-dark text-white font-bold py-4 rounded-2xl shadow-premium hover:shadow-glow transition-all duration-300 flex items-center justify-center gap-3 active:scale-[0.98]" type="button" onclick="sendOTP()">

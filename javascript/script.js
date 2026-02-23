@@ -161,33 +161,3 @@ if(!org_name || !org_code || !admin_name){
     unlockCreateOrgUI();
   }
 }
-
-//----------------- Google Sign-In Integration -----------------
-async function loginWithGoogle() {
-  try {
-
-    // Save form data first
-    const formData = {
-      org_name: document.getElementById("organizationName").value.trim(),
-      org_code: document.getElementById("organizationCode").value.trim(),
-      admin_name: document.getElementById("name").value.trim(),
-      email: document.getElementById("email").value.trim(),
-      level: document.getElementById("level").value
-    };
-
-    localStorage.setItem("pendingOrgData", JSON.stringify(formData));
-
-    const { error } = await window.supabaseClient.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: window.location.origin + "/createOrganization.html?type=google"
-      }
-    });
-
-    if (error) throw error;
-
-  } catch (err) {
-    alert(err.message);
-  }
-}
-
