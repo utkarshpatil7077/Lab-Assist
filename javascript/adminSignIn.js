@@ -111,6 +111,46 @@ async function verifyOTP(email, otpInput) {
     hideCircleLoader("loadingSubmit" ,"otpSubmmit");
   }
 }
+
+function redirect(){
+  const newPassword = document.getElementById("newPassword").value.trim() ;
+  const confirmPassword = document.getElementById("confirmPassword").value.trim() ;
+
+  if(!newPassword || !confirmPassword){
+    alert("Please fill Password") ;
+    return ;
+  }
+  else {
+    if( newPassword == confirmPassword){
+      adminSignup(newPassword);
+    }
+  }
+}
+async function adminSignup() {
+  try {
+    const name = document.getElementById("AdminName").value.trim();
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("newPassword").value.trim();
+
+    const { data, error } = await window.supabaseClient.auth.signUp({
+      email: email,
+      password: password,
+      options: {
+        data: {
+          full_name: name
+        },
+        emailRedirectTo: window.location.origin + "/createOrganization.html"
+      }
+    });
+
+    if (error) throw error;
+
+    alert("Signup successful! Please check your email to confirm.");
+
+  } catch (err) {
+    alert(err.message);
+  }
+}
 //----------------- Lock/Unlock UI -----------------
 function lockCreateOrgUI(loadingBar , btn) {
   showCircleLoader(loadingBar,btn);
@@ -132,26 +172,11 @@ function unlockCreateOrgUI(loadingBar , btn) {
   button.classList.remove("opacity-70", "cursor-not-allowed");
 }
 
-function redirect(){
-  
-}
-
 async function loginWithGoogle() {
   try {
 
     const name = document.getElementById("AdminName").value.trim() ;
     const email = document.getElementById("email").value.trim();
-
-    // // Save form data first
-    // const formData = {
-    //   org_name: document.getElementById("organizationName").value.trim(),
-    //   org_code: document.getElementById("organizationCode").value.trim(),
-    //   admin_name: document.getElementById("name").value.trim(),
-    //   email: document.getElementById("email").value.trim(),
-    //   level: document.getElementById("level").value
-    // };
-
-    // localStorage.setItem("pendingOrgData", JSON.stringify(formData));
 
     const { error } = await window.supabaseClient.auth.signInWithOAuth({
       provider: "google",

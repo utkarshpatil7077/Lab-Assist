@@ -3,8 +3,14 @@ async function createOrganization() {
   const orgName = document.getElementById("organizationName").value;
   const orgCode = document.getElementById("organizationCode").value;
 
+  if(!orgName || !orgCode){
+    alert("Please fill required fields") ;
+    return ;
+  }
+
   // 1️⃣ Get session
-  const { data: { session } } = await supabase.auth.getSession();
+  const { data: { session } } = await supabaseClient.auth.getSession();
+  console.log(session) ;
 
   if (!session) {
     alert("Please login first");
@@ -37,7 +43,7 @@ async function createOrganization() {
   alert("Organization created successfully!");
 
   // 3️⃣ Redirect to dashboard
-  window.location.href = "adminDashboard.html";
+  window.location.href = "./adminDashboard.html";
 }
 
 //----------------- Lock/Unlock UI -----------------
