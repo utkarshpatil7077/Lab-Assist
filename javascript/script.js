@@ -12,6 +12,8 @@ async function createOrganization() {
   const { data: { session } } = await supabaseClient.auth.getSession();
   console.log(session) ;
 
+  const adminName = session.user.user_metadata.full_name;
+
   if (!session) {
     alert("Please login first");
     return;
@@ -28,7 +30,8 @@ async function createOrganization() {
       },
       body: JSON.stringify({
         org_name: orgName,
-        org_code: orgCode
+        org_code: orgCode,
+        admin_name: adminName
       })
     }
   );

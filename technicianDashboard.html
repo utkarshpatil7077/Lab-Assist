@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Technician Dashboard - LabAssist</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="/javascript/technicianDashboard.js"></script>
+<style type="text/tailwindcss">
+        :root {
+            --sidebar-bg: #e0f2ff;
+            --sidebar-border: #d1dce5;
+            --sidebar-hover: #d1e9ff;
+            --main-bg: #f8fafc;
+            --card-bg: #ffffff;
+            --accent-blue: #2563eb;
+            --corporate-blue: #1e40af;
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --border-color: #e2e8f0;
+            --accent-red: #dc2626;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--main-bg);
+            color: var(--text-primary);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .sidebar-link-active {
+            background-color: var(--corporate-blue) !important;
+            color: white !important;
+        }
+        .sidebar-link-inactive {
+            color: var(--deep-corporate-blue);
+        }
+        .sidebar-link-inactive span {
+            color: var(--deep-corporate-blue);
+        }
+        .card-shadow {
+            box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+        }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden">
+<aside class="w-64 bg-[var(--sidebar-bg)] flex flex-col shrink-0 border-r border-[var(--sidebar-border)]">
+<div class="p-6 border-b border-[var(--sidebar-border)]">
+<h1 class="text-xl font-bold text-[var(--corporate-blue)] flex items-center gap-2">
+<span class="material-symbols-outlined text-[var(--corporate-blue)]">biotech</span>
+                LabAssist
+            </h1>
+</div>
+<nav class="flex-1 px-4 space-y-1 py-6 overflow-y-auto">
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg sidebar-link-active font-medium shadow-sm" href="#dashboard"
+    onclick="setActive(this); showTab('dashboard')">
+<span class="material-symbols-outlined text-sm">dashboard</span>
+                Dashboard
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg sidebar-link-inactive hover:bg-[var(--sidebar-hover)] transition-colors font-medium" href="#devices" 
+    onclick="setActive(this); showTab('devices')">
+<span class="material-symbols-outlined text-sm">devices</span>
+                Assigned Devices
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg sidebar-link-inactive hover:bg-[var(--sidebar-hover)] transition-colors font-medium" href="#">
+<span class="material-symbols-outlined text-sm">handyman</span>
+                Service Requests
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg sidebar-link-inactive hover:bg-[var(--sidebar-hover)] transition-colors font-medium" href="#">
+<span class="material-symbols-outlined text-sm">history</span>
+                Maintenance History
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg sidebar-link-inactive hover:bg-[var(--sidebar-hover)] transition-colors font-medium" href="#">
+<span class="material-symbols-outlined text-sm">person</span>
+                Profile
+            </a>
+</nav>
+<div class="p-4 border-t border-[var(--sidebar-border)]">
+<button class="flex items-center gap-3 px-4 py-3 w-full rounded-lg text-red-600 hover:bg-red-500/10 transition-colors font-medium">
+<span class="material-symbols-outlined text-sm">logout</span>
+                Logout
+            </button>
+</div>
+</aside>
+<main class="flex-1 flex flex-col overflow-auto bg-[var(--main-bg)]">
+<header class="h-16 bg-white border-b border-[var(--border-color)] flex items-center justify-between px-8 shrink-0">
+<div class="flex items-center gap-4 flex-1">
+<h2 class="text-lg font-semibold text-[var(--text-primary)]">Technician Dashboard</h2>
+</div>
+<div class="flex items-center gap-6">
+<button class="relative text-slate-500 hover:text-[var(--accent-blue)] transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-0 right-0 w-2 h-2 bg-[var(--accent-red)] rounded-full border-2 border-white"></span>
+</button>
+<div class="flex items-center gap-3 cursor-pointer pl-6 border-l border-slate-200">
+<div class="text-right">
+<p class="text-xs font-bold text-[var(--text-primary)]">Alex Rivera</p>
+<p class="text-[10px] text-slate-500 uppercase tracking-tighter">Senior Technician</p>
+</div>
+<div class="w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center border border-blue-200">
+<span class="material-symbols-outlined text-[var(--accent-blue)] text-xl">engineering</span>
+</div>
+</div>
+</div>
+</header>
+<div id="dashboard" class="hidden p-8 space-y-8">
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<div class="bg-white border border-[var(--border-color)] p-6 rounded-xl card-shadow">
+<div class="flex justify-between items-start">
+<div>
+<p class="text-slate-500 text-sm font-medium">Active Tasks</p>
+<h3 class="text-3xl font-bold mt-1 text-[var(--text-primary)]">12</h3>
+</div>
+<div class="p-3 bg-blue-50 rounded-lg">
+<span class="material-symbols-outlined text-[var(--accent-blue)]">assignment</span>
+</div>
+</div>
+<div class="mt-4 flex items-center text-xs text-emerald-600 font-medium">
+<span class="material-symbols-outlined text-xs mr-1">task_alt</span>
+<span>4 completed today</span>
+</div>
+</div>
+<div class="bg-white border border-[var(--border-color)] p-6 rounded-xl card-shadow">
+<div class="flex justify-between items-start">
+<div>
+<p class="text-slate-500 text-sm font-medium">Assigned Devices</p>
+<h3 class="text-3xl font-bold mt-1 text-[var(--text-primary)]">48</h3>
+</div>
+<div class="p-3 bg-indigo-50 rounded-lg">
+<span class="material-symbols-outlined text-indigo-600">precision_manufacturing</span>
+</div>
+</div>
+<div class="mt-4 flex items-center text-xs text-slate-400">
+<span>Across 3 lab locations</span>
+</div>
+</div>
+<div class="bg-white border border-[var(--border-color)] p-6 rounded-xl card-shadow border-l-4 border-l-red-500">
+<div class="flex justify-between items-start">
+<div>
+<p class="text-slate-500 text-sm font-medium">Critical Alerts</p>
+<h3 class="text-3xl font-bold mt-1 text-[var(--text-primary)]">3</h3>
+</div>
+<div class="p-3 bg-red-50 rounded-lg">
+<span class="material-symbols-outlined text-[var(--accent-red)]">error</span>
+</div>
+</div>
+<div class="mt-4 flex items-center text-xs text-[var(--accent-red)] font-semibold uppercase tracking-wider">
+<span class="material-symbols-outlined text-xs mr-1">warning</span>
+<span>Immediate action required</span>
+</div>
+</div>
+</div>
+<div class="bg-white border border-[var(--border-color)] rounded-xl card-shadow overflow-hidden">
+<div class="p-6 border-b border-[var(--border-color)] flex justify-between items-center">
+<h3 class="text-lg font-bold text-[var(--text-primary)]">Recent Maintenance Activity</h3>
+<button class="text-[var(--accent-blue)] text-sm font-semibold hover:underline px-3 py-1 bg-blue-50 rounded-md">Export Log</button>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider">
+<tr>
+<th class="px-6 py-4 font-semibold">Device Name</th>
+<th class="px-6 py-4 font-semibold">Lab Location</th>
+<th class="px-6 py-4 font-semibold text-center">Status</th>
+<th class="px-6 py-4 font-semibold text-right">Last Update</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-100">
+<tr class="hover:bg-slate-50/50 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-slate-400">biotech</span>
+<div>
+<p class="text-sm font-bold text-[var(--text-primary)]">Centrifuge model X-1</p>
+<p class="text-xs text-slate-500">SN: 88293-22</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 text-sm text-slate-600">Chemistry Lab 02</td>
+<td class="px-6 py-4 text-center">
+<span class="px-3 py-1 text-[10px] font-bold rounded-full bg-emerald-100 text-emerald-700 border border-emerald-200 uppercase">Completed</span>
+</td>
+<td class="px-6 py-4 text-right text-xs text-slate-400">10 mins ago</td>
+</tr>
+<tr class="hover:bg-slate-50/50 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-slate-400">air</span>
+<div>
+<p class="text-sm font-bold text-[var(--text-primary)]">Incubator Pro 500</p>
+<p class="text-xs text-slate-500">SN: 44102-11</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 text-sm text-slate-600">Bio-Safety Wing B</td>
+<td class="px-6 py-4 text-center">
+<span class="px-3 py-1 text-[10px] font-bold rounded-full bg-blue-100 text-blue-700 border border-blue-200 uppercase">In Progress</span>
+</td>
+<td class="px-6 py-4 text-right text-xs text-slate-400">45 mins ago</td>
+</tr>
+<tr class="hover:bg-slate-50/50 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-slate-400">visibility</span>
+<div>
+<p class="text-sm font-bold text-[var(--text-primary)]">Optical Microscope</p>
+<p class="text-xs text-slate-500">SN: 12005-99</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 text-sm text-slate-600">Physics Wing</td>
+<td class="px-6 py-4 text-center">
+<span class="px-3 py-1 text-[10px] font-bold rounded-full bg-amber-100 text-amber-700 border border-amber-200 uppercase">Scheduled</span>
+</td>
+<td class="px-6 py-4 text-right text-xs text-slate-400">2 hours ago</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+
+<div id="devices" class="p-8 space-y-6">
+<div class="bg-white p-4 rounded-xl border border-[var(--border-color)] card-shadow flex flex-wrap gap-4 items-center justify-between">
+<div class="relative flex-1 min-w-[300px]">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xl">search</span>
+<input class="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-[var(--accent-blue)] focus:border-transparent text-sm" placeholder="Search by device name, serial number, or location..." type="text"/>
+</div>
+<div class="flex items-center gap-3">
+<select class="text-sm border-slate-200 rounded-lg focus:ring-2 focus:ring-[var(--accent-blue)] py-2 pl-3 pr-8">
+<option>All Locations</option>
+<option>Chemistry Lab 02</option>
+<option>Bio-Safety Wing B</option>
+<option>Physics Wing</option>
+</select>
+<select class="text-sm border-slate-200 rounded-lg focus:ring-2 focus:ring-[var(--accent-blue)] py-2 pl-3 pr-8">
+<option>All Statuses</option>
+<option>Operational</option>
+<option>Needs Calibration</option>
+<option>Maintenance Due</option>
+</select>
+<button class="flex items-center gap-2 px-4 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors text-sm font-medium">
+<span class="material-symbols-outlined text-lg">filter_list</span>
+                        More Filters
+                    </button>
+</div>
+</div>
+<div class="bg-white border border-[var(--border-color)] rounded-xl card-shadow overflow-hidden">
+<div class="p-6 border-b border-[var(--border-color)] flex justify-between items-center">
+<div>
+<h3 class="text-lg font-bold text-[var(--text-primary)]">Equipment List</h3>
+<p class="text-xs text-slate-500 mt-1">Showing 48 assigned devices</p>
+</div>
+<button class="text-[var(--accent-blue)] text-sm font-semibold hover:underline px-3 py-1 bg-blue-50 rounded-md">Export Inventory</button>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider">
+<tr>
+<th class="px-6 py-4 font-semibold">Device Name</th>
+<th class="px-6 py-4 font-semibold">Serial Number</th>
+<th class="px-6 py-4 font-semibold">Lab Location</th>
+<th class="px-6 py-4 font-semibold">Last Maintenance</th>
+<th class="px-6 py-4 font-semibold">Status</th>
+<th class="px-6 py-4 font-semibold text-right">Action</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-100">
+<tr class="hover:bg-slate-50/50 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-blue-50 flex items-center justify-center">
+<span class="material-symbols-outlined text-[var(--accent-blue)] text-lg">biotech</span>
+</div>
+<span class="text-sm font-bold text-[var(--text-primary)]">Centrifuge model X-1</span>
+</div>
+</td>
+<td class="px-6 py-4 text-sm text-slate-600 font-mono">88293-22</td>
+<td class="px-6 py-4 text-sm text-slate-600">Chemistry Lab 02</td>
+<td class="px-6 py-4 text-sm text-slate-600">Oct 12, 2023</td>
+<td class="px-6 py-4">
+<span class="px-3 py-1 text-[10px] font-bold rounded-full bg-emerald-100 text-emerald-700 border border-emerald-200 uppercase">Operational</span>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="text-[var(--accent-blue)] text-xs font-bold hover:text-[var(--corporate-blue)] uppercase tracking-wide">View Details</button>
+</td>
+</tr>
+<tr class="hover:bg-slate-50/50 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-indigo-50 flex items-center justify-center">
+<span class="material-symbols-outlined text-indigo-600 text-lg">air</span>
+</div>
+<span class="text-sm font-bold text-[var(--text-primary)]">Incubator Pro 500</span>
+</div>
+</td>
+<td class="px-6 py-4 text-sm text-slate-600 font-mono">44102-11</td>
+<td class="px-6 py-4 text-sm text-slate-600">Bio-Safety Wing B</td>
+<td class="px-6 py-4 text-sm text-slate-600">Nov 05, 2023</td>
+<td class="px-6 py-4">
+<span class="px-3 py-1 text-[10px] font-bold rounded-full bg-amber-100 text-amber-700 border border-amber-200 uppercase">Needs Calibration</span>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="text-[var(--accent-blue)] text-xs font-bold hover:text-[var(--corporate-blue)] uppercase tracking-wide">View Details</button>
+</td>
+</tr>
+<tr class="hover:bg-slate-50/50 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-slate-50 flex items-center justify-center">
+<span class="material-symbols-outlined text-slate-500 text-lg">visibility</span>
+</div>
+<span class="text-sm font-bold text-[var(--text-primary)]">Optical Microscope</span>
+</div>
+</td>
+<td class="px-6 py-4 text-sm text-slate-600 font-mono">12005-99</td>
+<td class="px-6 py-4 text-sm text-slate-600">Physics Wing</td>
+<td class="px-6 py-4 text-sm text-slate-600">Aug 20, 2023</td>
+<td class="px-6 py-4">
+<span class="px-3 py-1 text-[10px] font-bold rounded-full bg-red-100 text-red-700 border border-red-200 uppercase">Maintenance Due</span>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="text-[var(--accent-blue)] text-xs font-bold hover:text-[var(--corporate-blue)] uppercase tracking-wide">View Details</button>
+</td>
+</tr>
+<tr class="hover:bg-slate-50/50 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-blue-50 flex items-center justify-center">
+<span class="material-symbols-outlined text-[var(--accent-blue)] text-lg">science</span>
+</div>
+<span class="text-sm font-bold text-[var(--text-primary)]">Mass Spectrometer V2</span>
+</div>
+</td>
+<td class="px-6 py-4 text-sm text-slate-600 font-mono">99201-44</td>
+<td class="px-6 py-4 text-sm text-slate-600">Chemistry Lab 02</td>
+<td class="px-6 py-4 text-sm text-slate-600">Dec 01, 2023</td>
+<td class="px-6 py-4">
+<span class="px-3 py-1 text-[10px] font-bold rounded-full bg-emerald-100 text-emerald-700 border border-emerald-200 uppercase">Operational</span>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="text-[var(--accent-blue)] text-xs font-bold hover:text-[var(--corporate-blue)] uppercase tracking-wide">View Details</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="px-6 py-4 bg-slate-50 border-t border-[var(--border-color)] flex items-center justify-between">
+<span class="text-xs text-slate-500 font-medium">Page 1 of 5</span>
+<div class="flex gap-2">
+<button class="p-1 rounded border border-slate-200 bg-white text-slate-400 cursor-not-allowed">
+<span class="material-symbols-outlined text-sm">chevron_left</span>
+</button>
+<button class="p-1 rounded border border-slate-200 bg-white text-slate-600 hover:bg-slate-50">
+<span class="material-symbols-outlined text-sm">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+
+</body></html>
