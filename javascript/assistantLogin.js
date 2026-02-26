@@ -1,3 +1,3 @@
 function redirectPage(){
-    window.location.href = "technicicnDashboard.html" ;
+    window.location.replace("technicianDashboard.html");
 }

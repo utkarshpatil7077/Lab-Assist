@@ -46,7 +46,7 @@ async function createOrganization() {
   alert("Organization created successfully!");
 
   // 3️⃣ Redirect to dashboard
-  window.location.href = "./adminDashboard.html";
+  window.location.href = "adminDashboard.html";
 }
 
 //----------------- Lock/Unlock UI -----------------
