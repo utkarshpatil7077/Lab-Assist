@@ -5,6 +5,8 @@ async function redirectPage(){
         alert("Please enter username and password")
     }
     else{
+      console.log(username) ;
+      console.log(password) ;
         const {data , error} = await supabaseClient.auth.signInWithPassword({
             email: username,
             password: password
@@ -15,34 +17,6 @@ async function redirectPage(){
         }
 
         alert("Login Successful!");
-        checkUserRole();
+        location.replace("adminDashboard.html") ;
     }
-}
-
-async function checkUserRole() {
-  const { data: { user } } = await supabaseClient.auth.getUser();
-
-  if (!user) {
-    alert("User not found!");
-    return;
-  }
-
-  const { data, error } = await supabaseClient
-    .from("users")
-    .select("role")
-    .eq("id", user.id)
-    .single();
-
-  if (error) {
-    alert("Error fetching role");
-    return;
-  }
-
-  if (data.role === "admin") {
-    window.location.href = "adminDashboard.html";
-  } else if (data.role === "technician") {
-    window.location.href = "technicianDashboard.html";
-  } else {
-    window.location.href = "studentDashboard.html";
-  }
 }
