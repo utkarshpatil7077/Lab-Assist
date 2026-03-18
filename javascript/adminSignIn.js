@@ -139,13 +139,14 @@ async function adminSignup() {
         data: {
           full_name: name
         },
-        emailRedirectTo: window.location.href + "createOrganization.html"
+        emailRedirectTo: window.location.origin + "createOrganization.html"
       }
     });
 
     if (error) throw error;
 
     alert("Signup successful! Please check your email to confirm.");
+    window.location.replace("createOrganization.html") ;
 
   } catch (err) {
     alert(err.message);

@@ -8,7 +8,13 @@ async function loadDashboard() {
     }
     console.log(session);
     document.getElementById("userName").textContent = session.user.user_metadata.full_name;
-    window.profile = await getCurrentUserProfile();
+    window.profile = session.user.user_metadata.email ;
+    console.log("Email : " + window.profile);
+    const orgID = sessionStorage.getItem("organizationID");
+  const deptID = sessionStorage.getItem("departmentID");
+
+  console.log(orgID);
+  console.log(deptID);
 }
 
 async function logoutUser() {
@@ -235,4 +241,42 @@ function verify(){
       alert(err);
     }
   }
+}
+
+async function sendInvite() {
+
+  const email = document.getElementById("inviteEmail").value;
+  const role = document.getElementById("inviteRole").value;
+  const empID = document.getElementById("inviteID").value;
+  console.log("Role : "+role);
+
+  const { data: { session } } = await supabaseClient.auth.getSession();
+
+  const response = await fetch(
+    "https://pbcnboxtlrymczzpppyl.supabase.co/functions/v1/send-invite",
+    {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${session.access_token}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        email: email,
+        role: role,
+        org_id: sessionStorage.getItem("organizationID"),
+        department_id: "d34f47d6-0671-4f9e-b66d-c357f85ccca0", //sessionStorage.getItem("departmentID"),
+        roll_no_or_emp_no: empID
+      })
+    }
+  );
+
+  const result = await response.json();
+  console.log(result);
+
+  if (response.ok) {
+    alert("Invite Sent Successfully");
+  } else {
+    alert("Error: " + result.error);
+  }
+  closeUserModal();
 }
