@@ -196,6 +196,7 @@ Sign In
 async function createAccount() {
 
   const name = document.getElementById("AdminName").value;
+  const email = document.getElementById("email").value;
   const password = document.getElementById("newPassword").value;
   const confirmPassword = document.getElementById("confirmPassword").value;
 
@@ -204,47 +205,40 @@ async function createAccount() {
     return;
   }
 
-  // ✅ Get invite token from URL
-  const inviteToken = new URLSearchParams(window.location.search).get("token");
-
-  if (!inviteToken) {
-    alert("Invalid invite link");
-    return;
-  }
-
-  // ✅ Verify invite (creates session)
-  const { data, error } = await supabaseClient.auth.verifyOtp({
-    token: inviteToken,
-    type: "invite"
+  // 1️⃣ Signup user
+  const { data, error } = await supabaseClient.auth.signUp({
+    email: email,
+    password: password
   });
 
   if (error) {
-    alert("Invite expired or invalid");
-    console.error(error);
+    alert(error.message);
     return;
   }
+  console.log("User Signup");
 
-  // ✅ Get session safely
+  // 2️⃣ Get session (IMPORTANT for JWT)
   const { data: sessionData } = await supabaseClient.auth.getSession();
-
+  console.log("Get Session");
   if (!sessionData.session) {
-    alert("Session not created");
+    alert("Session not created. Please check your email or invite link.");
     return;
   }
 
-  const accessToken = sessionData.session.access_token;
+    const accessToken = sessionData.session.access_token;
 
-  // ✅ Call Edge Function
+  // 3️⃣ Call your Edge Function
+  const inviteToken = new URLSearchParams(window.location.search).get("token");
   const response = await fetch(
     "https://pbcnboxtlrymczzpppyl.supabase.co/functions/v1/accept-invite",
     {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${accessToken}`
+        "Authorization": `Bearer ${accessToken}`   // 🔥 VERY IMPORTANT
       },
       body: JSON.stringify({
-        rawToken: inviteToken,
+        rawToken: inviteToken,     // from URL
         fullName: name
       })
     }
@@ -258,6 +252,7 @@ async function createAccount() {
   }
 
   alert("Account Created Successfully!");
+
   window.location.href = "administratorLogin.html";
 }
 </script>
