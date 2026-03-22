@@ -217,6 +217,17 @@ async function createAccount() {
   }
   console.log("User Signup");
 
+  //Sign in User
+  const {data1 , error1} = await supabaseClient.auth.signInWithPassword({
+            email: email,
+            password: password
+        });
+        if (error) {
+            alert("Login Failed: " + error.message);
+            return;
+        }
+        console.log("Sign in User");
+
   // 2️⃣ Get session (IMPORTANT for JWT)
   const { data: sessionData } = await window.supabaseClient.auth.getSession();
   if (!sessionData.session) {
