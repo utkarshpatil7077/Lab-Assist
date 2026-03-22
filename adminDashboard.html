@@ -502,21 +502,42 @@
 </div>
 <div id="complaints" class="tab hidden p-8 space-y-6">
   <h2 class="text-2xl font-bold text-slate-800">Complaints</h2>
-
+  <!-- Stats Cards -->
   <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-    <div class="bg-white p-6 rounded-xl border shadow-sm">
-      <p class="text-sm text-slate-500">Open Complaints</p>
-      <p class="text-3xl font-bold text-red-600">5</p>
+    <div class="bg-white border border-[var(--border-color)] p-6 rounded-xl card-shadow">
+      <div class="flex justify-between items-start">
+        <div>
+          <p class="text-slate-500 text-sm font-medium">Open Complaints</p>
+          <h3 class="text-3xl font-bold mt-1 text-[var(--text-primary)]">25</h3>
+        </div>
+        <div class="p-3 bg-blue-50 rounded-lg">
+          <span class="material-symbols-outlined text-[var(--accent-blue)]">complaints</span>
+        </div>
+      </div>
     </div>
 
-    <div class="bg-white p-6 rounded-xl border shadow-sm">
-      <p class="text-sm text-slate-500">Resolved</p>
-      <p class="text-3xl font-bold text-green-600">12</p>
+    <div class="bg-white border border-[var(--border-color)] p-6 rounded-xl card-shadow">
+      <div class="flex justify-between items-start">
+        <div>
+          <p class="text-slate-500 text-sm font-medium">Resolved</p>
+          <h3 class="text-3xl font-bold mt-1 text-[var(--text-primary)]">18</h3>
+        </div>
+        <div class="p-3 bg-emerald-50 rounded-lg">
+          <span class="material-symbols-outlined text-emerald-600">check_circle</span>
+        </div>
+      </div>
     </div>
 
-    <div class="bg-white p-6 rounded-xl border shadow-sm">
-      <p class="text-sm text-slate-500">High Priority</p>
-      <p class="text-3xl font-bold text-orange-500">2</p>
+    <div class="bg-white border border-[var(--border-color)] p-6 rounded-xl card-shadow border-l-4 border-l-red-500">
+      <div class="flex justify-between items-start">
+        <div>
+          <p class="text-slate-500 text-sm font-medium">High Priority</p>
+          <h3 class="text-3xl font-bold mt-1 text-[var(--text-primary)]">3</h3>
+        </div>
+        <div class="p-3 bg-red-50 rounded-lg">
+          <span class="material-symbols-outlined text-[var(--accent-red)]">person_alert</span>
+        </div>
+      </div>
     </div>
   </div>
 
