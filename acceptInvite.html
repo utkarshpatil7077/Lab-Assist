@@ -206,7 +206,7 @@ async function createAccount() {
   }
 
   // 1️⃣ Signup user
-  const { data, error } = await winsow.supabaseClient.auth.signUp({
+  const { data, error } = await window.supabaseClient.auth.signUp({
     email: email,
     password: password
   });
