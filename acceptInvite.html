@@ -206,7 +206,7 @@ async function createAccount() {
   }
 
   // 1️⃣ Signup user
-  const { data, error } = await supabaseClient.auth.signUp({
+  const { data, error } = await winsow.supabaseClient.auth.signUp({
     email: email,
     password: password
   });
@@ -218,12 +218,12 @@ async function createAccount() {
   console.log("User Signup");
 
   // 2️⃣ Get session (IMPORTANT for JWT)
-  const { data: sessionData } = await supabaseClient.auth.getSession();
-  console.log("Get Session");
+  const { data: sessionData } = await window.supabaseClient.auth.getSession();
   if (!sessionData.session) {
     alert("Session not created. Please check your email or invite link.");
     return;
   }
+    console.log("Get Session");
 
     const accessToken = sessionData.session.access_token;
 
