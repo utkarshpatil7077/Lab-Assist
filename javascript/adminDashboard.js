@@ -15,8 +15,196 @@ async function loadDashboard() {
 
   console.log(orgID);
   console.log(deptID);
-}
+  const { data } = await supabaseClient.auth.getSession();
+  const token = data.session?.access_token;
+  try {
+    const response = await fetch("https://pbcnboxtlrymczzpppyl.supabase.co/functions/v1/get-complaints", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + token
+      },
+      body: JSON.stringify({ role: "ADMIN" })
+    });
 
+console.log("Token:", token);
+    console.log("Token:", localStorage.getItem("token"));
+    const result = await response.json();
+
+    if (!result.success) throw new Error(result.error);
+
+    const complaints = result.data;
+    const stats = result.stats || {};
+    console.log(stats);
+    let l = stats.assigned + stats.ongoing + stats.on_hold + stats.queued;
+    console.log(l);
+    console.log(stats.assigned);
+
+    // 🔹 Update Cards
+    document.getElementById("activeComplaints").innerText = complaints.length;
+
+    // Unique labs count
+    const labs = new Set(complaints.map(c => c.labs?.lab_name));
+    document.getElementById("totalLabs").innerText = labs.size;
+
+    // 🔹 Load Table
+    loadTable(complaints);
+    updateSystemHealth(result.data);
+
+    renderOverviewChart(complaints);
+    loadUsers();
+
+  } catch (err) {
+    console.error("Dashboard Error:", err);
+  }
+}
+function updateSystemHealth(complaints) {
+  const total = complaints.length || 1;
+
+  const resolved = complaints.filter(c => c.status === "RESOLVED").length;
+  const pending = complaints.filter(c => c.status !== "RESOLVED").length;
+  const high = complaints.filter(c => c.priority === "HIGH").length;
+
+  const resolutionRate = (resolved / total) * 100;
+  const pendingRate = (pending / total) * 100;
+  const highRate = (high / total) * 100;
+
+  // ✅ Resolution
+  document.getElementById("serverBar").style.width = resolutionRate + "%";
+  document.getElementById("serverPercent").innerText =
+    Math.round(resolutionRate) + "%";
+
+  // ✅ Pending
+  document.getElementById("storageBar").style.width = pendingRate + "%";
+  document.getElementById("storagePercent").innerText =
+    Math.round(pendingRate) + "%";
+
+  // ✅ High Priority
+  document.getElementById("memoryBar").style.width = highRate + "%";
+  document.getElementById("memoryPercent").innerText =
+    Math.round(highRate) + "%";
+}
+function gotoComplaints(){
+  window.location.href = "complaints.html";
+}
+function loadTable(complaints) {
+  const table = document.getElementById("activityTable");
+  table.innerHTML = "";
+
+  complaints.slice(0, 5).forEach(c => {
+    const initials = c.students?.name
+      ? c.students.name.split(" ").map(n => n[0]).join("")
+      : "NA";
+
+    const row = `
+      <tr class="hover:bg-slate-50/50 transition-colors">
+        <td class="px-6 py-4">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-xs font-bold">
+              ${initials}
+            </div>
+            <div>
+              <p class="text-sm font-bold">${c.students?.name || "Unknown"}</p>
+              <p class="text-xs text-slate-500">${c.labs?.lab_name || "-"}</p>
+            </div>
+          </div>
+        </td>
+
+        <td class="px-6 py-4 text-sm text-slate-600">
+          ${c.title}
+        </td>
+
+        <td class="px-6 py-4 text-center">
+          <span class="px-3 py-1 text-[10px] font-bold rounded-full ${getStatusColor(c.status)} uppercase">
+            ${c.status}
+          </span>
+        </td>
+
+        <td class="px-6 py-4 text-right text-xs text-slate-400">
+          ${formatTime(c.created_at)}
+        </td>
+      </tr>
+    `;
+
+    table.innerHTML += row;
+  });
+}
+function getStatusColor(status) {
+  switch (status) {
+    case "RESOLVED":
+      return "bg-emerald-100 text-emerald-700";
+    case "IN_PROGRESS":
+      return "bg-blue-100 text-blue-700";
+    case "ON_HOLD":
+      return "bg-amber-100 text-amber-700";
+    case "ASSIGNED":
+      return "bg-purple-100 text-purple-700";
+    default:
+      return "bg-gray-100 text-gray-700";
+  }
+}
+function formatTime(date) {
+  const diff = Math.floor((new Date() - new Date(date)) / 60000);
+
+  if (diff < 1) return "Just now";
+  if (diff < 60) return diff + " mins ago";
+  
+  const hours = Math.floor(diff / 60);
+  if (hours < 24) return hours + " hours ago";
+
+  const days = Math.floor(hours / 24);
+  return days + " days ago";
+}
+function prepareOverviewData(complaints) {
+  const totalComplaints = complaints.length;
+
+  const labs = new Set(complaints.map(c => c.labs?.lab_name));
+  const totalLabs = labs.size;
+
+  const users = new Set(complaints.map(c => c.students?.id));
+  const totalUsers = users.size;
+
+  return {
+    users: totalUsers,
+    labs: totalLabs,
+    complaints: totalComplaints
+  };
+}
+let overviewChart;
+
+function renderOverviewChart(complaints) {
+  const stats = prepareOverviewData(complaints);
+
+  const ctx = document.getElementById("overviewChart");
+
+  // Prevent duplicate charts
+  if (overviewChart) {
+    overviewChart.destroy();
+  }
+
+  overviewChart = new Chart(ctx, {
+    type: "doughnut",   // 🔥 you can change to "pie" or "bar"
+    data: {
+      labels: ["Users", "Labs", "Complaints"],
+      datasets: [{
+        data: [stats.users, stats.labs, stats.complaints],
+        backgroundColor: [
+          "#3b82f6",   // blue
+          "#6366f1",   // indigo
+          "#ef4444"    // red
+        ]
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: {
+          position: "bottom"
+        }
+      }
+    }
+  });
+}
 async function logoutUser() {
   const { error } = await window.supabaseClient.auth.signOut();
 
@@ -279,4 +467,131 @@ async function sendInvite() {
     alert("Error: " + result.error);
   }
   closeUserModal();
+}
+async function loadUsers() {
+  try {
+    const { data } = await supabaseClient.auth.getSession();
+    const token = data.session?.access_token;
+    const orgID = sessionStorage.getItem("organizationID");
+
+    const response = await fetch("https://pbcnboxtlrymczzpppyl.supabase.co/functions/v1/get-students-technicians", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        organization_id: orgID
+      })
+    });
+
+    const result = await response.json();
+
+    if (!result.success) throw new Error(result.error);
+
+    const students = result.students || [];
+    const technicians = result.technicians || [];
+    updateUserStats(students, technicians);
+
+    // 🔥 Combine both
+    const users = [
+      ...students.map(s => ({ ...s, role: "STUDENT" })),
+      ...technicians.map(t => ({ ...t, role: "TECHNICIAN" }))
+    ];
+
+    renderUsers(users);
+
+  } catch (err) {
+    console.error("User Load Error:", err);
+  }
+}
+function renderUsers(users) {
+  const table = document.getElementById("usersTable");
+  table.innerHTML = "";
+
+  if (users.length === 0) {
+    table.innerHTML = `
+      <tr>
+        <td colspan="4" class="text-center py-4 text-slate-400">
+          No users found
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  users.forEach(user => {
+    const name = user.name || "Unknown";
+    const email = user.email || "N/A";
+    const role = user.role;
+
+    const status = user.status || "Active"; // adjust if you have field
+
+    const row = `
+      <tr class="hover:bg-slate-50/50 transition-colors">
+        
+        <td class="px-6 py-4 text-sm font-bold text-[var(--text-primary)]">
+          ${name}
+        </td>
+
+        <td class="px-6 py-4 text-sm text-slate-600">
+          ${email}
+        </td>
+
+        <td class="px-6 py-4 text-center">
+          <span class="px-3 py-1 text-[10px] font-bold rounded-full ${getRoleColor(role)} uppercase">
+            ${role}
+          </span>
+        </td>
+
+        <td class="px-6 py-4 text-right">
+          <span class="px-3 py-1 text-[10px] font-bold rounded-full ${getStatusColor(status)} uppercase">
+            ${status}
+          </span>
+        </td>
+
+      </tr>
+    `;
+
+    table.innerHTML += row;
+  });
+}
+function getRoleColor(role) {
+  switch (role) {
+    case "ADMIN":
+      return "bg-blue-100 text-blue-700";
+    case "TECHNICIAN":
+      return "bg-purple-100 text-purple-700";
+    case "STUDENT":
+      return "bg-slate-100 text-slate-700";
+    default:
+      return "bg-gray-100 text-gray-700";
+  }
+}
+function getStatusColor(status) {
+  switch (status) {
+    case "ACTIVE":
+      return "bg-emerald-100 text-emerald-700";
+    case "PENDING":
+      return "bg-amber-100 text-amber-700";
+    default:
+      return "bg-gray-100 text-gray-700";
+  }
+}
+function updateUserStats(students, technicians) {
+
+  // Example logic (adjust based on your DB)
+  const user = [
+      ...students.map(s => ({ ...s, role: "STUDENT" })),
+      ...technicians.map(t => ({ ...t, role: "TECHNICIAN" }))
+    ];
+  const totalUsers = user.length;
+  const activeUsers = user.filter(u => u.is_active === true).length;
+  const pendingUsers = user.filter(u => u.is_active === false).length;
+
+  // Update UI
+  document.getElementById("totalUsers").innerText = totalUsers;
+  document.getElementById("tUsers").innerHTML = totalUsers;
+  document.getElementById("activeUsers").innerText = activeUsers;
+  document.getElementById("pendingUsers").innerText = pendingUsers;
 }

@@ -14,6 +14,7 @@
 
 <!-- 3️⃣ Your main JS logic -->
 <script src="javascript/adminDashboard.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style type="text/tailwindcss">
         :root {
             --sidebar-bg: #e0f2ff;
@@ -66,7 +67,7 @@
             Dashboard
         </a>
 <a class="sidebar-link flex items-center gap-3 px-4 py-2.5 rounded-lg sidebar-link-inactive hover:bg-[var(--sidebar-hover)] transition-colors font-medium" href="#users"
-   onclick="setActive(this); showTab('users')">
+   onclick="setActive(this); showTab('users'); loadUsers()">
 <span class="material-symbols-outlined text-[20px]">group</span>
             Users
         </a>
@@ -130,7 +131,7 @@
 <div class="flex justify-between items-start">
 <div>
 <p class="text-slate-500 text-sm font-medium">Total Users</p>
-<h3 class="text-3xl font-bold mt-1 text-[var(--text-primary)]">25</h3>
+<h3 id="totalUsers" class="text-3xl font-bold mt-1 text-[var(--text-primary)]">0</h3>
 </div>
 <div class="p-3 bg-blue-50 rounded-lg">
 <span class="material-symbols-outlined text-[var(--accent-blue)]">group</span>
@@ -145,7 +146,7 @@
 <div class="flex justify-between items-start">
 <div>
 <p class="text-slate-500 text-sm font-medium">Total Labs</p>
-<h3 class="text-3xl font-bold mt-1 text-[var(--text-primary)]">8</h3>
+<h3 id="totalLabs" class="text-3xl font-bold mt-1 text-[var(--text-primary)]">0</h3>
 </div>
 <div class="p-3 bg-indigo-50 rounded-lg">
 <span class="material-symbols-outlined text-indigo-600">science</span>
@@ -159,7 +160,7 @@
 <div class="flex justify-between items-start">
 <div>
 <p class="text-slate-500 text-sm font-medium">Active Complaints</p>
-<h3 class="text-3xl font-bold mt-1 text-[var(--text-primary)]">4</h3>
+<h3 id="activeComplaints" class="text-3xl font-bold mt-1 text-[var(--text-primary)]">0</h3>
 </div>
 <div class="p-3 bg-red-50 rounded-lg">
 <span class="material-symbols-outlined text-[var(--accent-red)]">report_problem</span>
@@ -174,7 +175,7 @@
 <div class="bg-white border border-[var(--border-color)] rounded-xl card-shadow overflow-hidden">
 <div class="p-6 border-b border-[var(--border-color)] flex justify-between items-center">
 <h3 class="text-lg font-bold text-[var(--text-primary)]">Recent Activity</h3>
-<button class="text-[var(--accent-blue)] text-sm font-semibold hover:underline px-3 py-1 bg-blue-50 rounded-md">View All Logs</button>
+<button onclick="gotoComplaints()" class="text-[var(--accent-blue)] text-sm font-semibold hover:underline px-3 py-1 bg-blue-50 rounded-md">View All Complaints</button>
 </div>
 <div class="overflow-x-auto">
 <table class="w-full text-left">
@@ -186,106 +187,75 @@
 <th class="px-6 py-4 font-semibold text-right">Time</th>
 </tr>
 </thead>
-<tbody class="divide-y divide-slate-100">
-<tr class="hover:bg-slate-50/50 transition-colors">
-<td class="px-6 py-4">
-<div class="flex items-center gap-3">
-<div class="w-8 h-8 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center text-xs font-bold border border-slate-200">JS</div>
-<div>
-<p class="text-sm font-bold text-[var(--text-primary)]">John Smith</p>
-<p class="text-xs text-slate-500">Chemistry Lab 02</p>
-</div>
-</div>
-</td>
-<td class="px-6 py-4 text-sm text-slate-600">Device Calibration Updated</td>
-<td class="px-6 py-4 text-center">
-<span class="px-3 py-1 text-[10px] font-bold rounded-full bg-emerald-100 text-emerald-700 border border-emerald-200 uppercase">Completed</span>
-</td>
-<td class="px-6 py-4 text-right text-xs text-slate-400">2 mins ago</td>
-</tr>
-<tr class="hover:bg-slate-50/50 transition-colors">
-<td class="px-6 py-4">
-<div class="flex items-center gap-3">
-<div class="w-8 h-8 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center text-xs font-bold border border-slate-200">MA</div>
-<div>
-<p class="text-sm font-bold text-[var(--text-primary)]">Maria Alverez</p>
-<p class="text-xs text-slate-500">Physics Wing</p>
-</div>
-</div>
-</td>
-<td class="px-6 py-4 text-sm text-slate-600">Reported Hardware Malfunction</td>
-<td class="px-6 py-4 text-center">
-<span class="px-3 py-1 text-[10px] font-bold rounded-full bg-amber-100 text-amber-700 border border-amber-200 uppercase">Pending</span>
-</td>
-<td class="px-6 py-4 text-right text-xs text-slate-400">15 mins ago</td>
-</tr>
-<tr class="hover:bg-slate-50/50 transition-colors">
-<td class="px-6 py-4">
-<div class="flex items-center gap-3">
-<div class="w-8 h-8 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center text-xs font-bold border border-slate-200">RB</div>
-<div>
-<p class="text-sm font-bold text-[var(--text-primary)]">Robert Brown</p>
-<p class="text-xs text-slate-500">Admin Panel</p>
-</div>
-</div>
-</td>
-<td class="px-6 py-4 text-sm text-slate-600">New User Registered</td>
-<td class="px-6 py-4 text-center">
-<span class="px-3 py-1 text-[10px] font-bold rounded-full bg-blue-100 text-blue-700 border border-blue-200 uppercase">System Info</span>
-</td>
-<td class="px-6 py-4 text-right text-xs text-slate-400">1 hour ago</td>
-</tr>
+<tbody id="activityTable" class="divide-y divide-slate-100">
 </tbody>
 </table>
 </div>
 </div>
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 pb-8">
-<div class="bg-white border border-[var(--border-color)] p-6 rounded-xl card-shadow">
-<h3 class="text-sm font-bold text-[var(--text-primary)] mb-6 flex items-center gap-2">
-<span class="material-symbols-outlined text-slate-400 text-lg">analytics</span>
-                    Device Usage Distribution
-                </h3>
-<div class="h-48 w-full bg-slate-50 rounded-lg flex items-center justify-center border border-dashed border-slate-200">
-<div class="text-center">
-<span class="material-symbols-outlined text-slate-300 text-5xl">pie_chart</span>
-<p class="text-slate-400 text-sm mt-2 font-medium">Visualization: Device Categories</p>
-</div>
-</div>
-</div>
-<div class="bg-white border border-[var(--border-color)] p-6 rounded-xl card-shadow">
-<h3 class="text-sm font-bold text-[var(--text-primary)] mb-6 flex items-center gap-2">
-<span class="material-symbols-outlined text-slate-400 text-lg">health_and_safety</span>
-                    System Health
-                </h3>
-<div class="space-y-5">
-<div>
-<div class="flex justify-between text-xs font-semibold mb-2">
-<span class="text-slate-500">Server Performance</span>
-<span class="text-emerald-600">Optimized (24%)</span>
-</div>
-<div class="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
-<div class="h-full bg-emerald-500 w-[24%]"></div>
-</div>
-</div>
-<div>
-<div class="flex justify-between text-xs font-semibold mb-2">
-<span class="text-slate-500">Cloud Storage</span>
-<span class="text-blue-600">62% Capacity</span>
-</div>
-<div class="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
-<div class="h-full bg-[var(--accent-blue)] w-[62%]"></div>
-</div>
-</div>
-<div>
-<div class="flex justify-between text-xs font-semibold mb-2">
-<span class="text-slate-500">Memory Load</span>
-<span class="text-red-600">Warning (88%)</span>
-</div>
-<div class="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
-<div class="h-full bg-[var(--accent-red)] w-[88%]"></div>
-</div>
-</div>
-</div>
+
+  <!-- 🔹 Card 1: Chart -->
+  <div class="bg-white border border-[var(--border-color)] p-6 rounded-xl card-shadow">
+    <h3 class="text-sm font-bold mb-6 flex items-center gap-2">
+      <span class="material-symbols-outlined text-slate-400 text-lg">analytics</span>
+      System Overview
+    </h3>
+
+    <canvas id="overviewChart"></canvas>
+
+    <div class="text-center mt-4">
+      <span class="material-symbols-outlined text-slate-300 text-5xl">pie_chart</span>
+      <p class="text-slate-400 text-sm mt-2 font-medium">
+        Visualization: Device Categories
+      </p>
+    </div>
+  </div>
+
+  <!-- 🔹 Card 2: Complaints Info -->
+  <div class="bg-white border border-[var(--border-color)] p-6 rounded-xl card-shadow">
+    <h3 class="text-sm font-bold mb-6 flex items-center gap-2">
+      <span class="material-symbols-outlined text-slate-400 text-lg">health_and_safety</span>
+      Complaints Info
+    </h3>
+
+    <div class="space-y-5">
+
+      <!-- Resolution -->
+      <div>
+        <div class="flex justify-between text-xs font-semibold mb-2">
+          <span id="serverText" class="text-slate-500">Resolution Rate</span>
+          <span id="serverPercent" class="text-emerald-600"></span>
+        </div>
+        <div class="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+          <div id="serverBar" class="h-full bg-emerald-500" style="width: 0%"></div>
+        </div>
+      </div>
+
+      <!-- Pending -->
+      <div>
+        <div class="flex justify-between text-xs font-semibold mb-2">
+          <span id="storageText" class="text-slate-500">Pending</span>
+          <span id="storagePercent" class="text-blue-600"></span>
+        </div>
+        <div class="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+          <div id="storageBar" class="h-full bg-blue-500" style="width: 0%"></div>
+        </div>
+      </div>
+
+      <!-- High Priority -->
+      <div>
+        <div class="flex justify-between text-xs font-semibold mb-2">
+          <span id="memoryText" class="text-slate-500">High Priority</span>
+          <span id="memoryPercent" class="text-red-600"></span>
+        </div>
+        <div class="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+          <div id="memoryBar" class="h-full bg-red-500" style="width: 0%"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
 </div>
 </div>
 </div>
@@ -319,7 +289,7 @@
       <div class="flex justify-between items-start">
         <div>
           <p class="text-slate-500 text-sm font-medium">Total Users</p>
-          <h3 class="text-3xl font-bold mt-1 text-[var(--text-primary)]">25</h3>
+          <h3 id="tUsers" class="text-3xl font-bold mt-1 text-[var(--text-primary)]"></h3>
         </div>
         <div class="p-3 bg-blue-50 rounded-lg">
           <span class="material-symbols-outlined text-[var(--accent-blue)]">group</span>
@@ -331,7 +301,7 @@
       <div class="flex justify-between items-start">
         <div>
           <p class="text-slate-500 text-sm font-medium">Active Users</p>
-          <h3 class="text-3xl font-bold mt-1 text-[var(--text-primary)]">18</h3>
+          <h3 id="activeUsers" class="text-3xl font-bold mt-1 text-[var(--text-primary)]"></h3>
         </div>
         <div class="p-3 bg-emerald-50 rounded-lg">
           <span class="material-symbols-outlined text-emerald-600">check_circle</span>
@@ -343,7 +313,7 @@
       <div class="flex justify-between items-start">
         <div>
           <p class="text-slate-500 text-sm font-medium">Pending Approvals</p>
-          <h3 class="text-3xl font-bold mt-1 text-[var(--text-primary)]">3</h3>
+          <h3 id="pendingUsers" class="text-3xl font-bold mt-1 text-[var(--text-primary)]"></h3>
         </div>
         <div class="p-3 bg-red-50 rounded-lg">
           <span class="material-symbols-outlined text-[var(--accent-red)]">person_alert</span>
@@ -374,27 +344,6 @@
           </tr>
         </thead>
         <tbody id="usersTable" class="divide-y divide-slate-100">
-          <tr class="hover:bg-slate-50/50 transition-colors">
-            <td class="px-6 py-4 text-sm font-bold text-[var(--text-primary)]">John Smith</td>
-            <td class="px-6 py-4 text-sm text-slate-600">john@labassist.com</td>
-            <td class="px-6 py-4 text-center">
-              <span class="px-3 py-1 text-[10px] font-bold rounded-full bg-blue-100 text-blue-700 border border-blue-200 uppercase">Admin</span>
-            </td>
-            <td class="px-6 py-4 text-right">
-              <span class="px-3 py-1 text-[10px] font-bold rounded-full bg-emerald-100 text-emerald-700 border border-emerald-200 uppercase">Active</span>
-            </td>
-          </tr>
-
-          <tr class="hover:bg-slate-50/50 transition-colors">
-            <td class="px-6 py-4 text-sm font-bold text-[var(--text-primary)]">Maria Alverez</td>
-            <td class="px-6 py-4 text-sm text-slate-600">maria@labassist.com</td>
-            <td class="px-6 py-4 text-center">
-              <span class="px-3 py-1 text-[10px] font-bold rounded-full bg-slate-100 text-slate-700 border border-slate-200 uppercase">Student</span>
-            </td>
-            <td class="px-6 py-4 text-right">
-              <span class="px-3 py-1 text-[10px] font-bold rounded-full bg-amber-100 text-amber-700 border border-amber-200 uppercase">Pending</span>
-            </td>
-          </tr>
         </tbody>
       </table>
     </div>
