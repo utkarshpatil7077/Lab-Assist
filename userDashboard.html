@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Technician Dashboard - LabAssist</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- 1️⃣ Supabase library (CDN) -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<!-- 2️⃣ Your Supabase client config -->
+<script src="javascript/supabase.js"></script>
+<script src="/javascript/userDashboard.js"></script>
+<style type="text/tailwindcss">
+        :root {
+            --sidebar-bg: #e0f2ff;
+            --sidebar-border: #d1dce5;
+            --sidebar-hover: #d1e9ff;
+            --main-bg: #f8fafc;
+            --card-bg: #ffffff;
+            --accent-blue: #2563eb;
+            --corporate-blue: #1e40af;
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --border-color: #e2e8f0;
+            --accent-red: #dc2626;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--main-bg);
+            color: var(--text-primary);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .sidebar-link-active {
+            background-color: var(--corporate-blue) !important;
+            color: white !important;
+        }
+        .sidebar-link-inactive {
+            color: var(--deep-corporate-blue);
+        }
+        .sidebar-link-inactive span {
+            color: var(--deep-corporate-blue);
+        }
+        .card-shadow {
+            box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+        }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden">
+<aside class="w-64 bg-[var(--sidebar-bg)] flex flex-col shrink-0 border-r border-[var(--sidebar-border)]">
+<div class="p-6 border-b border-[var(--sidebar-border)]">
+<h1 class="text-xl font-bold text-[var(--corporate-blue)] flex items-center gap-2">
+<span class="material-symbols-outlined text-[var(--corporate-blue)]">biotech</span>
+                LabAssist
+            </h1>
+</div>
+<nav class="flex-1 px-4 space-y-1 py-6 overflow-y-auto">
+<a class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg sidebar-link-active font-medium shadow-sm" href="#dashboard"
+    onclick="setActive(this); showTab('dashboard'); loadDashboard()">
+<span class="material-symbols-outlined text-sm">dashboard</span>
+                Dashboard
+            </a>
+<a class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg sidebar-link-inactive hover:bg-[var(--sidebar-hover)] transition-colors font-medium" href="#devices" 
+    onclick="setActive(this); showTab('reportIssue')">
+<span class="material-symbols-outlined text-[20px] opacity-80">
+        report_problem
+    </span>
+                Report Issue
+            </a>
+<a class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg sidebar-link-inactive hover:bg-[var(--sidebar-hover)] transition-colors font-medium" href="#myIssues"
+    onclick="setActive(this); showTab('myIssues')">
+<span class="material-symbols-outlined text-[20px] opacity-80">
+        assignment_late
+    </span>
+                My Issues
+            </a>
+<a class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg sidebar-link-inactive hover:bg-[var(--sidebar-hover)] transition-colors font-medium" href="#reportsTab"
+    onclick="setActive(this); showTab('reportsTab')">
+<span class="material-symbols-outlined text-[20px] opacity-80">
+        assessment
+    </span>
+                Report
+            </a>
+<a class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg sidebar-link-inactive hover:bg-[var(--sidebar-hover)] transition-colors font-medium" href="#progileTab"
+    onclick="setActive(this); showTab('profileTab')">
+<span class="material-symbols-outlined text-sm">person</span>
+                Profile
+            </a>
+</nav>
+<div class="p-4 border-t border-[var(--sidebar-border)]">
+<button class="flex items-center gap-3 px-4 py-3 w-full rounded-lg text-red-600 hover:bg-red-500/10 transition-colors font-medium" onclick="logoutUser()">
+<span class="material-symbols-outlined text-sm">logout</span>
+                Logout
+            </button>
+</div>
+</aside>
+<main class="flex-1 flex flex-col overflow-auto bg-[var(--main-bg)]">
+<header class="h-16 bg-white border-b border-[var(--border-color)] flex items-center justify-between px-8 shrink-0">
+<div class="flex items-center gap-4 flex-1">
+<h2 class="text-lg font-semibold text-[var(--text-primary)]">User Dashboard</h2>
+</div>
+<div class="flex items-center gap-6">
+<button class="relative text-slate-500 hover:text-[var(--accent-blue)] transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-0 right-0 w-2 h-2 bg-[var(--accent-red)] rounded-full border-2 border-white"></span>
+</button>
+<div class="flex items-center gap-3 cursor-pointer pl-6 border-l border-slate-200">
+<div class="text-right">
+<p id="name" class="text-xs font-bold text-[var(--text-primary)]"></p>
+<p class="text-[10px] text-slate-500 uppercase tracking-tighter">General User</p>
+</div>
+<div class="w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center border border-blue-200">
+<span class="material-symbols-outlined text-[var(--accent-blue)] text-xl">engineering</span>
+</div>
+</div>
+</div>
+</header>
+<div id="dashboard" class="tab p-8 space-y-8">
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<div class="bg-white border border-[var(--border-color)] p-6 rounded-xl card-shadow">
+<div class="flex justify-between items-start">
+<div>
+<p class="text-slate-500 text-sm font-medium">Active Labs</p>
+<h3 id="activeLabs" class="text-3xl font-bold mt-1 text-[var(--text-primary)]"></h3>
+</div>
+<div class="p-3 bg-blue-50 rounded-lg">
+<span class="material-symbols-outlined text-[var(--accent-blue)] text-[20px]">
+        computer
+    </span>
+</div>
+</div>
+<div class="mt-4 flex items-center text-xs text-emerald-600 font-medium">
+</div>
+</div>
+<div class="bg-white border border-[var(--border-color)] p-6 rounded-xl card-shadow">
+<div class="flex justify-between items-start">
+<div>
+<p class="text-slate-500 text-sm font-medium">Your Complaints</p>
+<h3 id="totalComplaints" class="text-3xl font-bold mt-1 text-[var(--text-primary)]"></h3>
+</div>
+<div class="p-3 bg-indigo-50 rounded-lg">
+<span class="material-symbols-outlined text-indigo-600 text-[20px]">
+        feedback
+    </span>
+</div>
+</div>
+</div>
+<div class="bg-white border border-[var(--border-color)] p-6 rounded-xl card-shadow border-l-4 border-l-red-500">
+<div class="flex justify-between items-start">
+<div>
+<p class="text-slate-500 text-sm font-medium">Pending Complaints</p>
+<h3 id="pendingComplaints" class="text-3xl font-bold mt-1 text-[var(--text-primary)]"></h3>
+</div>
+<div class="p-3 bg-red-50 rounded-lg">
+<span class="material-symbols-outlined text-[var(--accent-red)]">error</span>
+</div>
+</div>
+<div class="mt-4 flex items-center text-xs text-[var(--accent-red)] font-semibold uppercase tracking-wider">
+<span class="material-symbols-outlined text-xs mr-1">warning</span>
+<span>Immediate action required</span>
+</div>
+</div>
+</div>
+<div class="bg-white border border-[var(--border-color)] rounded-xl card-shadow overflow-hidden">
+<div class="p-6 border-b border-[var(--border-color)] flex justify-between items-center">
+<h3 class="text-lg font-bold text-[var(--text-primary)]">My Recent Issues</h3>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider">
+<tr>
+<th class="px-6 py-4 font-semibold">Lab</th>
+<th class="px-6 py-4 font-semibold">Issue</th>
+<th class="px-6 py-4 font-semibold text-center">Status</th>
+<th class="px-6 py-4 font-semibold text-right">Date</th>
+</tr>
+</thead>
+<tbody id="tbody" class="divide-y divide-slate-100">
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div id="reportIssue" class="hidden tab p-8 space-y-8">
+
+  <!-- Header -->
+  <div>
+    <h2 class="text-2xl font-bold text-[var(--text-primary)]">Report New Issue</h2>
+    <p class="text-sm text-[var(--text-secondary)] mt-1">
+      Submit a complaint regarding lab or device problems.
+    </p>
+  </div>
+
+  <!-- Form Card -->
+  <div class="bg-white border border-[var(--border-color)] rounded-xl card-shadow p-6">
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+      <!-- Lab -->
+      <div>
+        <label class="block text-sm font-medium text-slate-600 mb-1">Lab</label>
+        <select id="lab" onchange="loadDevices()" class="w-full border border-[var(--border-color)] p-2 rounded-lg">
+          <option value="">Select Lab</option>
+        </select>
+      </div>
+
+      <!-- Device -->
+      <div>
+        <label class="block text-sm font-medium text-slate-600 mb-1">Device</label>
+        <select id="device" class="w-full border border-[var(--border-color)] p-2 rounded-lg">
+          <option value="">Select Device</option>
+        </select>
+      </div>
+
+      <!-- Title -->
+      <div class="md:col-span-2">
+        <label class="block text-sm font-medium text-slate-600 mb-1">Issue Title</label>
+        <input id="title" type="text" placeholder="Enter issue title"
+          class="w-full border border-[var(--border-color)] p-2 rounded-lg">
+      </div>
+
+      <!-- Description -->
+      <div class="md:col-span-2">
+        <label class="block text-sm font-medium text-slate-600 mb-1">Description</label>
+        <textarea id="description" rows="4" placeholder="Describe the issue..."
+          class="w-full border border-[var(--border-color)] p-2 rounded-lg"></textarea>
+      </div>
+
+      <!-- Priority -->
+      <div>
+        <label class="block text-sm font-medium text-slate-600 mb-1">Priority</label>
+        <select id="priority" class="w-full border border-[var(--border-color)] p-2 rounded-lg">
+          <option value="LOW">Low</option>
+          <option value="MEDIUM">Medium</option>
+          <option value="HIGH">High</option>
+        </select>
+      </div>
+
+      <!-- Image Upload -->
+      <div>
+        <label class="block text-sm font-medium text-slate-600 mb-1">Upload Image (Optional)</label>
+        <input id="image" type="file"
+          class="w-full border border-[var(--border-color)] p-2 rounded-lg">
+      </div>
+
+    </div>
+
+    <!-- Submit Button -->
+    <div class="mt-6 flex justify-end">
+      <button onclick="submitComplaint()"
+        class="bg-[var(--accent-blue)] text-white px-6 py-2 rounded-lg font-semibold hover:opacity-90">
+        Submit Complaint
+      </button>
+    </div>
+
+  </div>
+
+</div>
+<div id="myIssues" class="tab hidden p-8 space-y-8">
+
+  <!-- Header -->
+  <div class="flex justify-between items-center">
+    <div>
+      <h2 class="text-2xl font-bold text-[var(--text-primary)]">My Issues</h2>
+      <p class="text-sm text-[var(--text-secondary)]">Track all your submitted complaints</p>
+    </div>
+
+    <button onclick="gotoComplaints()" 
+      class="text-[var(--accent-blue)] text-sm font-semibold hover:underline px-3 py-1 bg-blue-50 rounded-md">
+      View All
+    </button>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+
+    <div class="bg-white p-5 rounded-xl border card-shadow">
+      <p class="text-sm text-slate-500">Total</p>
+      <h3 id="totalIssues" class="text-2xl font-bold">0</h3>
+    </div>
+
+    <div class="bg-white p-5 rounded-xl border card-shadow">
+      <p class="text-sm text-slate-500">Pending</p>
+      <h3 id="pendingIssues" class="text-2xl font-bold text-yellow-500">0</h3>
+    </div>
+
+    <div class="bg-white p-5 rounded-xl border card-shadow">
+      <p class="text-sm text-slate-500">In Progress</p>
+      <h3 id="progressIssues" class="text-2xl font-bold text-blue-500">0</h3>
+    </div>
+
+    <div class="bg-white p-5 rounded-xl border card-shadow">
+      <p class="text-sm text-slate-500">Resolved</p>
+      <h3 id="resolvedIssues" class="text-2xl font-bold text-green-500">0</h3>
+    </div>
+
+  </div>
+
+  <!-- Table -->
+  <div class="bg-white rounded-xl border card-shadow overflow-hidden">
+    <div class="p-4 border-b font-semibold">Recent Issues</div>
+
+    <div class="overflow-x-auto">
+      <table class="w-full text-left">
+        <thead class="bg-slate-50 text-xs uppercase text-slate-500">
+          <tr>
+            <th class="px-6 py-4">Lab</th>
+            <th class="px-6 py-4">Issue</th>
+            <th class="px-6 py-4">Status</th>
+            <th class="px-6 py-4">Priority</th>
+            <th class="px-6 py-4">Date</th>
+          </tr>
+        </thead>
+        <tbody id="issuesTable"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+<div id="reportsTab" class="tab p-8 space-y-8 hidden">
+
+  <h2 class="text-2xl font-bold">My Complaint Analytics</h2>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+    <!-- Status Pie -->
+    <div class="bg-white p-4 rounded-xl shadow">
+      <h3 class="text-sm font-semibold mb-2 text-slate-500">Status Distribution</h3>
+      <canvas id="statusChart"></canvas>
+    </div>
+
+    <!-- Priority Bar -->
+    <div class="bg-white p-4 rounded-xl shadow">
+      <h3 class="text-sm font-semibold mb-2 text-slate-500">Priority Breakdown</h3>
+      <canvas id="priorityChart"></canvas>
+    </div>
+
+  </div>
+
+  <!-- Timeline -->
+  <div class="bg-white p-4 rounded-xl shadow">
+    <h3 class="text-sm font-semibold mb-2 text-slate-500">Complaints Over Time</h3>
+    <canvas id="timelineChart"></canvas>
+  </div>
+
+</div>
+<div id="profileTab" class="tab p-8 hidden space-y-6">
+
+  <h2 class="text-2xl font-bold">My Profile</h2>
+
+  <!-- Top Section -->
+  <div class="bg-white p-6 rounded-xl shadow flex flex-col md:flex-row items-center gap-6">
+
+    <div id="avatar" class="w-20 h-20 bg-blue-100 text-blue-600 flex items-center justify-center rounded-full text-3xl font-bold">
+      U
+    </div>
+
+    <div>
+      <h3 id="p_name" class="text-xl font-semibold"></h3>
+      <p id="p_email" class="text-sm text-slate-500"></p>
+      <p class="text-xs text-slate-400 mt-1">Student Account</p>
+    </div>
+
+  </div>
+
+  <!-- Info + Stats -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+    <!-- Basic Info -->
+    <div class="bg-white p-6 rounded-xl shadow space-y-3">
+      <h3 class="font-semibold text-slate-600 mb-2">Basic Information</h3>
+
+      <div><span class="text-slate-400 text-sm">Roll No:</span> <span id="p_roll"></span></div>
+      <div><span class="text-slate-400 text-sm">Department:</span> <span id="p_department"></span></div>
+      <div><span class="text-slate-400 text-sm">Organization:</span> <span id="p_org"></span></div>
+    </div>
+
+    <!-- Complaint Stats -->
+    <div class="bg-white p-6 rounded-xl shadow space-y-3">
+      <h3 class="font-semibold text-slate-600 mb-2">My Activity</h3>
+
+      <div>Total Complaints: <b id="stat_total"></b></div>
+      <div>Resolved: <b class="text-green-600" id="stat_resolved"></b></div>
+      <div>Pending: <b class="text-yellow-600" id="stat_pending"></b></div>
+      <div>High Priority: <b class="text-red-500" id="stat_high"></b></div>
+    </div>
+
+  </div>
+
+  <!-- Extra Insights -->
+  <div class="bg-white p-6 rounded-xl shadow">
+    <h3 class="font-semibold text-slate-600 mb-4">Insights</h3>
+
+    <ul class="list-disc ml-5 text-sm text-slate-600 space-y-2">
+      <li id="insight1"></li>
+      <li id="insight2"></li>
+      <li id="insight3"></li>
+    </ul>
+  </div>
+
+  <!-- Actions -->
+  <div class="flex gap-3">
+    <button onclick="logoutUser()" class="px-4 py-2 bg-red-500 text-white rounded-lg">Logout</button>
+  </div>
+
+</div>
+</main>
+<script>
+window.onload = loadDashboard;
+</script>
+</body></html>

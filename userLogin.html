@@ -13,7 +13,7 @@
 <script src="javascript/supabase.js"></script>
 
 <!-- 3️⃣ Your main JS logic -->
- <script src="javascript/login.js"></script>
+ <script src="javascript/userLogin.js"></script>
 <script id="tailwind-config">
         tailwind.config = {
             darkMode: "class",
@@ -85,7 +85,7 @@
                 </a>
 </div>
 <div class="mb-10">
-<h1 class="text-3xl font-bold text-slate-900 tracking-tight">Assistant Login</h1>
+<h1 class="text-3xl font-bold text-slate-900 tracking-tight">User Login</h1>
 <p class="mt-2 text-slate-500 font-normal">
                     Secure access for system users.
                 </p>
@@ -99,7 +99,7 @@
 <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5">
 <span class="material-symbols-outlined text-slate-400 group-focus-within:text-primary transition-colors">person</span>
 </div>
-<input class="block w-full rounded-md border border-border-subtle bg-slate-50 py-3 pl-11 pr-4 text-slate-900 transition-all focus:border-primary focus:bg-white focus:ring-1 focus:ring-primary/20 sm:text-sm placeholder:text-slate-400" id="username" name="username" placeholder="user.identifier" type="text"/>
+<input class="block w-full rounded-md border border-border-subtle bg-slate-50 py-3 pl-11 pr-4 text-slate-900 transition-all focus:border-primary focus:bg-white focus:ring-1 focus:ring-primary/20 sm:text-sm placeholder:text-slate-400" id="username" type="email"/>
 </div>
 </div>
 <div class="space-y-2">
@@ -126,7 +126,7 @@
                     </label>
 </div>
 <div class="pt-2">
-<button class="flex w-full justify-center items-center gap-2 rounded-md bg-primary px-4 py-3.5 text-sm font-bold text-white shadow-lg hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all" type="submit">
+<button onclick="userSignIn()" class="flex w-full justify-center items-center gap-2 rounded-md bg-primary px-4 py-3.5 text-sm font-bold text-white shadow-lg hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all" type="button">
 <span class="material-symbols-outlined text-[20px]">login</span>
                         Sign In to Laboratory Console
                     </button>

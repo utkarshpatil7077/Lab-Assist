@@ -76,10 +76,10 @@
 <span class="material-symbols-outlined text-[20px]">science</span>
             Labs
         </a>
-<a class="sidebar-link flex items-center gap-3 px-4 py-2.5 rounded-lg sidebar-link-inactive hover:bg-[var(--sidebar-hover)] transition-colors font-medium" href="#devices"
-    onclick="setActive(this); showTab('devices')">
+<a class="sidebar-link flex items-center gap-3 px-4 py-2.5 rounded-lg sidebar-link-inactive hover:bg-[var(--sidebar-hover)] transition-colors font-medium" href="#departments"
+    onclick="setActive(this); showTab('departments')">
 <span class="material-symbols-outlined text-[20px]">devices</span>
-            Devices
+            Departments
         </a>
 <a class="sidebar-link flex items-center gap-3 px-4 py-2.5 rounded-lg sidebar-link-inactive hover:bg-[var(--sidebar-hover)] transition-colors font-medium" href="#complaints"
     onclick="setActive(this); showTab('complaints')">
@@ -109,10 +109,22 @@
 </div>
 </div>
 <div class="flex items-center gap-6">
-<button class="relative text-slate-500 hover:text-[var(--accent-blue)] transition-colors">
+<button onclick="toggleNotifications()" class="relative text-slate-500 hover:text-[var(--accent-blue)] transition-colors">
 <span class="material-symbols-outlined">notifications</span>
 <span class="absolute top-0 right-0 w-2 h-2 bg-[var(--accent-red)] rounded-full border-2 border-white"></span>
 </button>
+<div id="notificationBox" 
+     class="hidden absolute right-8 top-16 w-80 bg-white border rounded-xl shadow-lg z-50">
+     <span id="notifCount"
+        class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] px-1.5 rounded-full hidden">
+  </span>
+
+  <div class="p-4 border-b font-semibold">Notifications</div>
+
+  <div id="notificationList" class="max-h-64 overflow-y-auto text-sm">
+    <p class="p-4 text-slate-400 text-center">No notifications</p>
+  </div>
+</div>
 <div class="flex items-center gap-3 cursor-pointer pl-6 border-l border-slate-200">
 <div class="text-right">
 <p class="text-xs font-bold text-[var(--text-primary)]"><span id="userName"></span></p>
@@ -376,7 +388,7 @@
       <div class="flex justify-between items-start">
         <div>
           <p class="text-slate-500 text-sm font-medium">Total Labs</p>
-          <h3 class="text-3xl font-bold mt-1 text-[var(--text-primary)]">25</h3>
+          <h3 id="totalLabs" class="text-3xl font-bold mt-1 text-[var(--text-primary)]"></h3>
         </div>
         <div class="p-3 bg-blue-50 rounded-lg">
           <span class="material-symbols-outlined text-[var(--accent-blue)]">group</span>
@@ -388,7 +400,92 @@
       <div class="flex justify-between items-start">
         <div>
           <p class="text-slate-500 text-sm font-medium">Active Labs</p>
-          <h3 class="text-3xl font-bold mt-1 text-[var(--text-primary)]">20</h3>
+          <h3 id="activeLabs" class="text-3xl font-bold mt-1 text-[var(--text-primary)]"></h3>
+        </div>
+        <div class="p-3 bg-indigo-50 rounded-lg">
+  <span class="material-symbols-outlined text-indigo-600">desktop_windows</span>
+</div>
+      </div>
+    </div>
+
+    <div class="bg-white border border-[var(--border-color)] p-6 rounded-xl card-shadow border-l-4 border-l-red-500">
+      <div class="flex justify-between items-start">
+        <div>
+          <p class="text-slate-500 text-sm font-medium">Maintainance Due</p>
+          <h3 id="maintenanceLabs" class="text-3xl font-bold mt-1 text-[var(--text-primary)]"></h3>
+        </div>
+        <div class="p-3 bg-red-50 rounded-lg">
+          <span class="material-symbols-outlined text-[var(--accent-red)]">person_alert</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="bg-white border border-[var(--border-color)] rounded-xl card-shadow overflow-hidden">
+    <div class="p-6 border-b border-[var(--border-color)] flex justify-between items-center">
+      <h3 class="text-lg font-bold text-[var(--text-primary)]">All Labs</h3>
+      <button class="text-[var(--accent-blue)] text-sm font-semibold hover:underline px-3 py-1 bg-blue-50 rounded-md">
+        View All Labs Info
+      </button>
+      </div>
+  <div class="overflow-x-auto">
+      <table class="w-full text-left">
+        <thead class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider">
+          <tr>
+            <th class="px-6 py-4 font-semibold">Lab Code</th>
+            <th class="px-6 py-4 font-semibold">Lab Name</th>
+            <th class="px-6 py-4 font-semibold text-center">Lab Type</th>
+            <th class="px-6 py-4 font-semibold text-right">Status</th>
+          </tr>
+        </thead>
+        <tbody id="labTable" class="divide-y divide-slate-100">
+        </tbody>
+      </table>
+    </div>
+    </div>
+    </div>
+  </div>
+<div id="departments" class="tab hidden p-8 space-y-8">
+
+  <!-- Header -->
+  <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+    <div>
+      <h2 class="text-2xl font-bold text-[var(--text-primary)]">Departments</h2>
+      <p class="text-sm text-slate-500">Manage all departments in your organization</p>
+    </div>
+    <div class="flex gap-2">
+      <input
+        type="text"
+        placeholder="Search departments..."
+        class="px-4 py-2 border border-[var(--border-color)] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+        oninput="filterDepartments(this.value)"
+      />
+      <button
+        onclick="openDepartmentModal()"
+        class="px-4 py-2 rounded-lg bg-[var(--accent-blue)] text-white text-sm font-semibold hover:opacity-90">
+        + Add Department
+      </button>
+    </div>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div class="bg-white border border-[var(--border-color)] p-6 rounded-xl card-shadow">
+      <div class="flex justify-between items-start">
+        <div>
+          <p class="text-slate-500 text-sm font-medium">Total Departments</p>
+          <h3 id="totalDepartments" class="text-3xl font-bold mt-1 text-[var(--text-primary)]">0</h3>
+        </div>
+        <div class="p-3 bg-blue-50 rounded-lg">
+          <span class="material-symbols-outlined text-[var(--accent-blue)]">apartment</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-white border border-[var(--border-color)] p-6 rounded-xl card-shadow">
+      <div class="flex justify-between items-start">
+        <div>
+          <p class="text-slate-500 text-sm font-medium">Active Departments</p>
+          <h3 id="activeDepartments" class="text-3xl font-bold mt-1 text-[var(--text-primary)]">0</h3>
         </div>
         <div class="p-3 bg-emerald-50 rounded-lg">
           <span class="material-symbols-outlined text-emerald-600">check_circle</span>
@@ -399,54 +496,40 @@
     <div class="bg-white border border-[var(--border-color)] p-6 rounded-xl card-shadow border-l-4 border-l-red-500">
       <div class="flex justify-between items-start">
         <div>
-          <p class="text-slate-500 text-sm font-medium">Maintainance Due</p>
-          <h3 class="text-3xl font-bold mt-1 text-[var(--text-primary)]">3</h3>
+          <p class="text-slate-500 text-sm font-medium">Inactive Departments</p>
+          <h3 id="inactiveDepartments" class="text-3xl font-bold mt-1 text-[var(--text-primary)]">0</h3>
         </div>
         <div class="p-3 bg-red-50 rounded-lg">
-          <span class="material-symbols-outlined text-[var(--accent-red)]">person_alert</span>
+          <span class="material-symbols-outlined text-[var(--accent-red)]">highlight_off</span>
         </div>
       </div>
     </div>
   </div>
-  </div>
-<div id="devices" class="tab hidden p-8 space-y-6">
-  <h2 class="text-2xl font-bold text-slate-800">Devices</h2>
 
-  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-    <div class="bg-white p-6 rounded-xl border shadow-sm">
-      <p class="text-sm text-slate-500">Total Devices</p>
-      <p class="text-3xl font-bold">42</p>
-      <button class="mt-3 text-blue-600 hover:underline">Manage Devices</button>
+  <!-- Departments Table -->
+  <div class="bg-white border border-[var(--border-color)] rounded-xl card-shadow overflow-hidden">
+    <div class="p-6 border-b border-[var(--border-color)] flex justify-between items-center">
+      <h3 class="text-lg font-bold text-[var(--text-primary)]">All Departments</h3>
+      <button class="text-[var(--accent-blue)] text-sm font-semibold hover:underline px-3 py-1 bg-blue-50 rounded-md">
+        Export
+      </button>
     </div>
 
-    <div class="bg-white p-6 rounded-xl border shadow-sm">
-      <p class="text-sm text-slate-500">Faulty Devices</p>
-      <p class="text-3xl font-bold text-red-600">5</p>
-      <button class="mt-3 text-red-600 hover:underline">View Issues</button>
-    </div>
-
-  </div>
-
-  <div class="bg-white border rounded-xl mt-6 overflow-hidden">
-    <div class="p-4 border-b font-semibold">Recent Devices</div>
-    <table class="w-full text-sm">
-      <tr class="border-b">
-        <th class="p-3 text-left">Device</th>
-        <th class="p-3">Lab</th>
-        <th class="p-3">Status</th>
-      </tr>
-      <tr class="border-b">
-        <td class="p-3">Microscope #12</td>
-        <td class="p-3">Chemistry Lab</td>
-        <td class="p-3 text-green-600">Working</td>
-      </tr>
+    <div class="overflow-x-auto">
+  <table class="w-full text-left">
+    <thead class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider">
       <tr>
-        <td class="p-3">Oscilloscope #3</td>
-        <td class="p-3">Physics Lab</td>
-        <td class="p-3 text-red-600">Faulty</td>
+        <th class="px-6 py-4 font-semibold">Department</th>
+        <th class="px-6 py-4 font-semibold">Code</th>
+        <th class="px-6 py-4 font-semibold">Description</th>
+        <th class="px-6 py-4 font-semibold text-right">Actions</th>
       </tr>
-    </table>
+    </thead>
+    <tbody id="departmentTable" class="divide-y divide-slate-100">
+      <!-- Rows will be injected dynamically -->
+    </tbody>
+  </table>
+    </div>
   </div>
 </div>
 <div id="complaints" class="tab hidden p-8 space-y-6">
@@ -457,10 +540,10 @@
       <div class="flex justify-between items-start">
         <div>
           <p class="text-slate-500 text-sm font-medium">Open Complaints</p>
-          <h3 class="text-3xl font-bold mt-1 text-[var(--text-primary)]">25</h3>
+          <h3 id="openCount" class="text-3xl font-bold mt-1 text-[var(--text-primary)]"></h3>
         </div>
-        <div class="p-3 bg-blue-50 rounded-lg">
-          <span class="material-symbols-outlined text-[var(--accent-blue)]">complaints</span>
+        <div class="p-3 bg-orange-50 rounded-lg">
+          <span class="material-symbols-outlined text-orange-600">report</span>
         </div>
       </div>
     </div>
@@ -469,7 +552,7 @@
       <div class="flex justify-between items-start">
         <div>
           <p class="text-slate-500 text-sm font-medium">Resolved</p>
-          <h3 class="text-3xl font-bold mt-1 text-[var(--text-primary)]">18</h3>
+          <h3 id="resolvedCount" class="text-3xl font-bold mt-1 text-[var(--text-primary)]"></h3>
         </div>
         <div class="p-3 bg-emerald-50 rounded-lg">
           <span class="material-symbols-outlined text-emerald-600">check_circle</span>
@@ -481,7 +564,7 @@
       <div class="flex justify-between items-start">
         <div>
           <p class="text-slate-500 text-sm font-medium">High Priority</p>
-          <h3 class="text-3xl font-bold mt-1 text-[var(--text-primary)]">3</h3>
+          <h3 id="highCount" class="text-3xl font-bold mt-1 text-[var(--text-primary)]"></h3>
         </div>
         <div class="p-3 bg-red-50 rounded-lg">
           <span class="material-symbols-outlined text-[var(--accent-red)]">person_alert</span>
@@ -493,21 +576,14 @@
   <div class="bg-white border rounded-xl mt-6 overflow-hidden">
     <div class="p-4 border-b font-semibold">Recent Complaints</div>
     <table class="w-full text-sm">
+      <thead>
       <tr class="border-b">
         <th class="p-3 text-left">Issue</th>
         <th class="p-3">Lab</th>
         <th class="p-3">Status</th>
       </tr>
-      <tr class="border-b">
-        <td class="p-3">Microscope not working</td>
-        <td class="p-3">Bio Lab</td>
-        <td class="p-3 text-red-600">Open</td>
-      </tr>
-      <tr>
-        <td class="p-3">PC not booting</td>
-        <td class="p-3">Computer Lab</td>
-        <td class="p-3 text-green-600">Resolved</td>
-      </tr>
+      </thead>
+      <tbody id="complaintTable"></tbody>
     </table>
   </div>
 </div>
@@ -538,69 +614,45 @@
 
 <!-- USER CREATE MODAL -->
 <div id="userModal" class="fixed inset-0 bg-black/30 hidden items-center justify-center z-50">
-
   <div class="bg-white w-full max-w-lg rounded-xl border border-[var(--border-color)] card-shadow">
 
     <!-- Modal Header -->
     <div class="flex justify-between items-center px-6 py-4 border-b border-[var(--border-color)]">
-      <h3 class="text-lg font-bold text-[var(--text-primary)]">
-        Create New User
-      </h3>
+      <h3 class="text-lg font-bold text-[var(--text-primary)]">Create New User</h3>
       <button onclick="closeUserModal()" class="text-slate-400 hover:text-red-500">
         <span class="material-symbols-outlined">close</span>
       </button>
     </div>
 
     <!-- Modal Body -->
-    <form class="p-6 space-y-5">
+    <form id="inviteForm" class="p-6 space-y-5">
+
       <div>
-        <label class="block text-sm font-medium text-slate-600 mb-1">
-          Email Address
-        </label>
-        <input id="inviteEmail" type="email"
-          class="w-full px-4 py-2 border border-[var(--border-color)] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent-blue)]"
-          placeholder="Enter email address" />
+        <label class="block text-sm font-medium text-slate-600 mb-1">Email Address</label>
+        <input id="inviteEmail" type="email" class="w-full px-4 py-2 border border-[var(--border-color)] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent-blue)]" placeholder="Enter email address" />
       </div>
 
       <div>
-        <label class="block text-sm font-medium text-slate-600 mb-1">
-          Employee or Student ID
-        </label>
-        <input id="inviteID" type="text"
-          class="w-full px-4 py-2 border border-[var(--border-color)] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent-blue)]"
-          placeholder="Enter email address" />
+        <label class="block text-sm font-medium text-slate-600 mb-1">Employee or Student ID</label>
+        <input id="inviteID" type="text" class="w-full px-4 py-2 border border-[var(--border-color)] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent-blue)]" placeholder="Enter ID" />
       </div>
 
       <div>
-        <label class="block text-sm font-medium text-slate-600 mb-1">
-          Role
-        </label>
-        <select
-        id="inviteRole"
-          class="w-full px-4 py-2 border border-[var(--border-color)] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent-blue)]">
-          <option>ADMIN</option>
-          <option>TECHNICIAN</option>
-          <option>STUDENT</option>
-        </select>
+        <label class="block text-sm font-medium text-slate-600 mb-1">Role</label>
+        <select id="inviteRole" class="w-full px-4 py-2 border border-[var(--border-color)] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent-blue)]"></select>
+      </div>
+
+      <!-- Department select only for ORG_ADMIN -->
+      <div id="departmentSelectContainer" class="hidden">
+        <label class="block text-sm font-medium text-slate-600 mb-1">Select Department</label>
+        <select id="departmentSelect" class="w-full px-4 py-2 border border-[var(--border-color)] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent-blue)]"></select>
       </div>
 
       <!-- Footer Buttons -->
       <div class="flex justify-end gap-3 pt-4 border-t border-[var(--border-color)]">
-
-        <button type="button"
-          onclick="closeUserModal()"
-          class="px-4 py-2 rounded-lg border border-slate-300 text-slate-600 text-sm hover:bg-slate-100">
-          Cancel
-        </button>
-
-        <button type="button"
-          class="px-5 py-2 rounded-lg bg-[var(--accent-blue)] text-white text-sm font-semibold hover:opacity-90"
-          onclick="sendInvite()">
-          Create User
-        </button>
-
+        <button type="button" onclick="closeUserModal()" class="px-4 py-2 rounded-lg border border-slate-300 text-slate-600 text-sm hover:bg-slate-100">Cancel</button>
+        <button type="button" class="px-5 py-2 rounded-lg bg-[var(--accent-blue)] text-white text-sm font-semibold hover:opacity-90" onclick="sendInvite()">Create User</button>
       </div>
-
     </form>
   </div>
 </div>
@@ -713,7 +765,63 @@
     </form>
   </div>
 </div>
+<div id="departmentModal" class="fixed inset-0 flex items-center justify-center bg-black/30 hidden z-50">
+  <div class="bg-white w-full max-w-lg rounded-xl border border-[var(--border-color)] card-shadow">
 
+    <!-- Modal Header -->
+    <div class="flex justify-between items-center px-6 py-4 border-b border-[var(--border-color)]">
+      <h3 class="text-lg font-bold text-[var(--text-primary)]">
+        Create New Department
+      </h3>
+      <button onclick="closeDepartmentModal()" class="text-slate-400 hover:text-red-500">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+
+    <!-- Modal Body -->
+    <form class="p-6 space-y-5">
+
+      <div>
+        <label class="block text-sm font-medium text-slate-600 mb-1">Department Name</label>
+        <input id="departmentName" type="text"
+          class="w-full px-4 py-2 border border-[var(--border-color)] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent-blue)]"
+          placeholder="Enter department name" />
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-slate-600 mb-1">Department Code</label>
+        <input id="departmentCode" type="text"
+          class="w-full px-4 py-2 border border-[var(--border-color)] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent-blue)]"
+          placeholder="Enter department code (unique)" />
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-slate-600 mb-1">Description</label>
+        <textarea id="departmentDescription"
+          class="w-full px-4 py-2 border border-[var(--border-color)] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent-blue)]"
+          placeholder="Optional description"></textarea>
+      </div>
+
+      <!-- Footer Buttons -->
+      <div class="flex justify-end gap-3 pt-4 border-t border-[var(--border-color)]">
+
+        <button type="button"
+          onclick="closeDepartmentModal()"
+          class="px-4 py-2 rounded-lg border border-slate-300 text-slate-600 text-sm hover:bg-slate-100">
+          Cancel
+        </button>
+
+        <button type="button"
+          class="px-5 py-2 rounded-lg bg-[var(--accent-blue)] text-white text-sm font-semibold hover:opacity-90"
+          onclick="createDepartment()">
+          Create Department
+        </button>
+
+      </div>
+
+    </form>
+  </div>
+</div>
 </main>
 
 </body></html>
