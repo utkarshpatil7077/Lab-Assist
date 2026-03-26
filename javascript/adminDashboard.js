@@ -32,6 +32,7 @@ console.log("Token:", token);
     const result = await response.json();
 
     if (!result.success) throw new Error(result.error);
+    console.log(result);
 
     const complaints = result.data;
     const stats = result.stats || {};
@@ -300,7 +301,7 @@ async function openUserModal() {
         deptSelect.innerHTML = '<option value="">No departments found</option>';
       });
 
-  } else if (level === "DEPT_ADMIN") {
+  } else if (level === "DEPARTMENT_ADMIN") {
     // DEPT_ADMIN can invite STUDENT or TECHNICIAN only
     roleSelect.innerHTML = `
       <option value="STUDENT">STUDENT</option>
@@ -500,7 +501,7 @@ function sendInvite() {
   if (level === "ORG_ADMIN") {
     department_id = document.getElementById("departmentSelect").value;
     console.log(department_id);
-  } else if (level === "DEPT_ADMIN") {
+  } else if (level === "DEPARTMENT_ADMIN") {
     department_id = userData.profile.department_id;
   }
 
