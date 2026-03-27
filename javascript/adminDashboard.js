@@ -138,18 +138,28 @@ function loadTable(complaints) {
   });
 }
 function getStatusColor(status) {
-  switch (status) {
-    case "RESOLVED":
-      return "bg-emerald-100 text-emerald-700";
-    case "IN_PROGRESS":
-      return "bg-blue-100 text-blue-700";
-    case "ON_HOLD":
-      return "bg-amber-100 text-amber-700";
-    case "ASSIGNED":
-      return "bg-purple-100 text-purple-700";
-    default:
-      return "bg-gray-100 text-gray-700";
+  if (status === "PENDING") {
+    return `<span class="px-3 py-1 text-[10px] font-bold rounded-full bg-yellow-100 text-yellow-600 px-2 py-1 rounded">Pending</span>`;
   }
+  if (status === "IN_PROGRESS") {
+    return `<span class="px-3 py-1 text-[10px] font-bold rounded-full bg-blue-100 text-blue-600 px-2 py-1 rounded">In Progress</span>`;
+  }
+  if (status === "RESOLVED") {
+    return `<span class="px-3 py-1 text-[10px] font-bold rounded-full bg-green-100 text-green-600 px-2 py-1 rounded">Resolved</span>`;
+  }
+  if (status === "OPEN") {
+    return `<span class="px-3 py-1 text-[10px] font-bold rounded-full bg-red-100 text-red-600 px-2 py-1 rounded">Open</span>`;
+  }
+  if (status === "ASSIGNED") {
+    return `<span class="px-3 py-1 text-[10px] font-bold rounded-full bg-blue-100 text-blue-600 px-2 py-1 rounded">Assigned</span>`;
+  }
+  if (status === "CANCELLED") {
+    return `<span class="px-3 py-1 text-[10px] font-bold rounded-full bg-red-100 text-red-600 px-2 py-1 rounded">Cancelled</span>`;
+  }
+  if (status === "ON_HOLD") {
+    return `<span class="px-3 py-1 text-[10px] font-bold rounded-full bg-yellow-100 text-yellow-600 px-2 py-1 rounded">On Hold</span>`;
+  }
+  return status;
 }
 function formatTime(date) {
   const diff = Math.floor((new Date() - new Date(date)) / 60000);
