@@ -231,7 +231,7 @@ async function logoutUser() {
   } else {
     console.log("✅ User logged out successfully!");
     // Optionally redirect to login page
-    window.location.href = "/index.html";
+    window.location.href = "./index.html";
   }
 }
 // Set active sidebar link
