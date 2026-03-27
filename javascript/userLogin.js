@@ -61,7 +61,7 @@ async function loadRole() {
     }
 
     if (result.role === "TECHNICIAN") {
-        location.replace("assistantDashboard.html");
+        location.replace("technicianDashboard.html");
     }
 
     if (result.role === "STUDENT") {

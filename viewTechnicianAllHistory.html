@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Maintenance History</title>
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Libraries -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="javascript/supabase.js"></script>
+
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #f1f5f9;
+    }
+
+    .glass-card {
+      background: rgba(255,255,255,0.95);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(226,232,240,0.8);
+    }
+
+    .table-row:hover {
+      background-color: #f8fafc;
+    }
+
+    @media print {
+      body * { visibility: hidden; }
+      #printSection, #printSection * { visibility: visible; }
+      #printSection {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+
+<body class="min-h-screen p-6">
+
+<div class="max-w-7xl mx-auto">
+
+  <!-- Header -->
+  <div class="flex justify-between items-center mb-6">
+    <div>
+      <h1 class="text-2xl font-bold">Maintenance History</h1>
+      <p class="text-sm text-slate-500">All resolved and completed maintenance records</p>
+    </div>
+
+    <div class="flex gap-2">
+      <button onclick="printTable()" class="bg-blue-50 px-3 py-1 rounded">🖨️ Print</button>
+      <button onclick="downloadCSV()" class="bg-blue-50 px-3 py-1 rounded">📄 CSV</button>
+      <button onclick="downloadPDF()" class="bg-blue-50 px-3 py-1 rounded">📥 PDF</button>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="glass-card p-4 rounded-xl mb-6 flex gap-4">
+
+    <input id="searchInput" oninput="applyFilters()" type="text"
+      placeholder="Search by title..."
+      class="w-full p-2 border rounded-lg">
+
+    <select id="statusFilter" onchange="applyFilters()" class="p-2 border rounded-lg">
+      <option value="">All</option>
+      <option value="RESOLVED">Resolved</option>
+      <option value="CLOSED">Closed</option>
+    </select>
+
+  </div>
+
+  <!-- Table -->
+  <div id="printSection">
+    <div class="glass-card rounded-xl overflow-hidden">
+
+      <table class="w-full text-left">
+        <thead class="bg-gray-100">
+          <tr>
+            <th class="p-3">Title</th>
+            <th class="p-3">Lab</th>
+            <th class="p-3">Technician</th>
+            <th class="p-3">Status</th>
+            <th class="p-3">Completed Date</th>
+          </tr>
+        </thead>
+
+        <tbody id="historyTable"></tbody>
+      </table>
+
+      <div id="emptyState" class="hidden text-center py-10 text-gray-400">
+        No history found
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<script>
+
+let allHistory = [];
+
+window.onload = loadHistory;
+
+// 🔹 LOAD DATA
+async function loadHistory() {
+  try {
+    const { data } = await supabaseClient.auth.getSession();
+    const token = data.session?.access_token;
+
+    const res = await fetch("https://pbcnboxtlrymczzpppyl.supabase.co/functions/v1/get-complaints", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + token
+      },
+      body: JSON.stringify({ role: "TECHNICIAN" }) // 🔥 important
+    });
+
+    const result = await res.json();
+
+    if (!result.success) {
+      console.error(result.error);
+      return;
+    }
+
+    // 🔥 FILTER HISTORY
+    allHistory = result.data.filter(c =>
+      ["RESOLVED", "CLOSED"].includes(c.status)
+    );
+
+    renderTable(allHistory);
+
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+// 🔹 RENDER TABLE
+function renderTable(data) {
+  const table = document.getElementById("historyTable");
+  const empty = document.getElementById("emptyState");
+
+  table.innerHTML = "";
+
+  if (!data.length) {
+    empty.classList.remove("hidden");
+    return;
+  } else {
+    empty.classList.add("hidden");
+  }
+
+  // Latest first
+  data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+  data.forEach(c => {
+    table.innerHTML += `
+      <tr class="table-row border-b cursor-pointer"
+          onclick="openComplaintModal('${c.id}')">
+
+        <td class="p-3">${c.title}</td>
+        <td class="p-3">${c.labs?.lab_name || "-"}</td>
+        <td class="p-3">${c.technicians?.name || "-"}</td>
+        <td class="p-3">${getStatusBadge(c.status)}</td>
+        <td class="p-3">
+          ${c.resolved_at 
+            ? new Date(c.resolved_at).toLocaleDateString()
+            : "-"
+          }
+        </td>
+
+      </tr>
+    `;
+  });
+}
+
+// 🔹 STATUS BADGE
+function getStatusBadge(status) {
+  if (status === "RESOLVED") {
+    return `<span class="bg-green-100 text-green-600 px-2 py-1 rounded text-xs">Resolved</span>`;
+  }
+  if (status === "CLOSED") {
+    return `<span class="bg-blue-100 text-blue-600 px-2 py-1 rounded text-xs">Closed</span>`;
+  }
+  return status;
+}
+
+// 🔹 FILTER
+function applyFilters() {
+  const search = document.getElementById("searchInput").value.toLowerCase();
+  const status = document.getElementById("statusFilter").value;
+
+  const filtered = allHistory.filter(c => {
+    return c.title.toLowerCase().includes(search) &&
+           (status === "" || c.status === status);
+  });
+
+  renderTable(filtered);
+}
+
+// 🔹 PRINT
+function printTable() {
+  window.print();
+}
+
+// 🔹 CSV
+function downloadCSV() {
+  let csv = [["Title","Lab","Technician","Status","Date"]];
+
+  allHistory.forEach(c => {
+    csv.push([
+      c.title,
+      c.labs?.lab_name || "-",
+      c.technicians?.name || "-",
+      c.status,
+      c.resolved_at ? new Date(c.resolved_at).toLocaleDateString() : "-"
+    ]);
+  });
+
+  const blob = new Blob([csv.map(e => e.join(",")).join("\n")]);
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "maintenance_history.csv";
+  a.click();
+}
+
+// 🔹 PDF
+function downloadPDF() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+
+  doc.text("Maintenance History Report", 14, 15);
+
+  const rows = allHistory.map(c => [
+    c.title,
+    c.labs?.lab_name || "-",
+    c.technicians?.name || "-",
+    c.status,
+    c.resolved_at ? new Date(c.resolved_at).toLocaleDateString() : "-"
+  ]);
+
+  doc.autoTable({
+    head: [["Title","Lab","Technician","Status","Date"]],
+    body: rows,
+    startY: 20
+  });
+
+  doc.save("maintenance_history.pdf");
+}
+
+</script>
+
+</body>
+</html>

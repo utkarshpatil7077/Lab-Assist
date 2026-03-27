@@ -1,8 +1,17 @@
+window.addEventListener("DOMContentLoaded", loadDashboard);
 async function loadDashboard() {
     const { data } = await supabaseClient.auth.getSession();
     console.log(data);
+    const {data : {session}} = await supabaseClient.auth.getSession() ;
+    if(!session){
+        alert("Login first") ;
+        console.log(session) ;
+    }
     const token = data.session.access_token;
-    document.getElementById("name").textContent = data.session.user.user_metadata.full_name;
+    const userMeta = session.user.user_metadata;
+    const name = userMeta.full_name || userMeta.email;
+
+document.getElementById("name").innerText = name;
     console.log()
   const res = await fetch("https://pbcnboxtlrymczzpppyl.supabase.co/functions/v1/get-complaints", {
     method: "POST",

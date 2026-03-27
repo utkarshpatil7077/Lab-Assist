@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>All Labs</title>
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="javascript/supabase.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #f1f5f9;
+    }
+    .glass-card {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(226, 232, 240, 0.8);
+    }
+    .table-row:hover {
+      background-color: #f8fafc;
+      transition: all 0.2s;
+    }
+    :root {
+            --sidebar-bg: #e0f2ff;
+            --sidebar-border: #d1dce5;
+            --sidebar-hover: #d1e9ff;
+            --main-bg: #f8fafc;
+            --card-bg: #ffffff;
+            --accent-blue: #2563eb;
+            --corporate-blue: #1e40af;
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --border-color: #e2e8f0;
+            --accent-red: #dc2626;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--main-bg);
+            color: var(--text-primary);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .sidebar-link-active {
+            background-color: var(--corporate-blue) !important;
+            color: white !important;
+        }
+        .sidebar-link-inactive {
+            color: var(--deep-corporate-blue);
+        }
+        .sidebar-link-inactive span {
+            color: var(--deep-corporate-blue);
+        }
+        .card-shadow {
+            box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+        }
+    @media print {
+
+  /* Hide everything */
+  body * {
+    visibility: hidden;
+  }
+
+  /* Show only print section */
+  #printSection, #printSection * {
+    visibility: visible;
+  }
+
+  /* Keep table layout intact */
+  #printSection {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  th, td {
+    border: 1px solid #000;
+    padding: 8px;
+    text-align: left;
+  }
+  }
+  </style>
+</head>
+
+<body class="p-6">
+
+<div class="max-w-7xl mx-auto">
+
+    <!-- Header -->
+<div class="flex justify-between items-center mb-6">
+  <div>
+    <h1 class="text-2xl font-bold text-slate-800">All Labs</h1>
+    <p class="text-sm text-slate-500">View labs and devices</p>
+  </div>
+
+  <div class="flex items-center gap-2">
+    <button onclick="printTable()" class="text-blue-600 text-sm font-semibold px-3 py-1 bg-blue-50 rounded-md">
+      🖨️ Print
+    </button>
+    <button onclick="downloadCSV()" class="text-blue-600 text-sm font-semibold px-3 py-1 bg-blue-50 rounded-md">
+      📄 CSV
+    </button>
+    <button onclick="downloadPDF()" class="text-blue-600 text-sm font-semibold px-3 py-1 bg-blue-50 rounded-md">
+      📥 PDF
+    </button>
+  </div>
+</div>
+  </div>
+
+  <!-- Search -->
+  <div class="glass-card p-4 rounded-xl mb-6">
+    <input id="searchInput" oninput="applyFilter()" type="text"
+      placeholder="Search lab..."
+      class="w-full p-2 border rounded-lg">
+  </div>
+
+  <!-- Table -->
+   <div id="printSection">
+  <div class="glass-card rounded-xl overflow-hidden">
+    <table class="w-full text-left">
+      <thead class="bg-gray-100">
+        <tr>
+          <th class="p-3">Lab Name</th>
+          <th class="p-3">Code</th>
+          <th class="p-3">Type</th>
+          <th class="p-3">Devices</th>
+          <th class="p-3">Status</th>
+        </tr>
+      </thead>
+      <tbody id="labsTable"></tbody>
+    </table>
+
+    <div id="emptyState" class="hidden text-center py-10 text-gray-400">
+      No labs found
+    </div>
+  </div>
+  </div>
+
+</div>
+
+<script>
+
+let allLabs = [];
+
+window.onload = loadLabs;
+
+// 🔹 Load Labs
+async function loadLabs() {
+  try {
+    const { data } = await supabaseClient.auth.getSession();
+    const token = data.session?.access_token;
+
+    if (!token) {
+      alert("Please login first");
+      return;
+    }
+
+    const res = await fetch("https://pbcnboxtlrymczzpppyl.supabase.co/functions/v1/get-lab-architecture", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + token
+      },
+      body: JSON.stringify({
+        role: "ADMIN" // 🔥 change dynamically if needed
+      })
+    });
+
+    const text = await res.text();
+    console.log("RAW RESPONSE:", text);
+
+    let result;
+    try {
+      result = JSON.parse(text);
+    } catch {
+      console.error("Invalid JSON:", text);
+      return;
+    }
+
+    if (!result.success) {
+      console.error(result.error);
+      return;
+    }
+
+    let labs = [];
+
+    // 🔥 HANDLE ALL RESPONSE TYPES
+
+    // ORG ADMIN → departments[]
+    if (result.data?.departments) {
+      result.data.departments.forEach(dep => {
+        dep.labs?.forEach(l => labs.push(l));
+      });
+    }
+
+    // DEPARTMENT / STUDENT → labs[]
+    else if (result.data?.labs) {
+      labs = result.data.labs;
+    }
+
+    allLabs = labs;
+
+    renderLabs(allLabs);
+
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+// 🔹 Render Table
+function renderLabs(labs) {
+  const table = document.getElementById("labsTable");
+  const empty = document.getElementById("emptyState");
+
+  table.innerHTML = "";
+
+  if (!labs || labs.length === 0) {
+    empty.classList.remove("hidden");
+    return;
+  } else {
+    empty.classList.add("hidden");
+  }
+
+  labs.forEach(l => {
+    const deviceCount = l.devices ? l.devices.length : 0;
+
+    const row = `
+      <tr class="table-row border-b">
+        <td class="p-3">${l.lab_name}</td>
+        <td class="p-3">${l.lab_code || "-"}</td>
+        <td class="p-3">${l.lab_type || "-"}</td>
+        <td class="p-3">${deviceCount}</td>
+        <td class="p-3">${getStatus(l)}</td>
+      </tr>
+    `;
+    table.innerHTML += row;
+  });
+}
+
+// 🔹 Status Badge
+function getStatus(lab) {
+  if (lab.is_under_maintenance) {
+    return `<span class="px-2 py-1 text-xs bg-yellow-100 text-yellow-600 rounded">Maintenance</span>`;
+  }
+  if (lab.is_active) {
+    return `<span class="px-2 py-1 text-xs bg-green-100 text-green-600 rounded">Active</span>`;
+  }
+  return `<span class="px-2 py-1 text-xs bg-red-100 text-red-600 rounded">Inactive</span>`;
+}
+
+// 🔹 Search Filter
+function applyFilter() {
+  const search = document.getElementById("searchInput").value.toLowerCase();
+
+  const filtered = allLabs.filter(l =>
+    l.lab_name.toLowerCase().includes(search)
+  );
+
+  renderLabs(filtered);
+}
+
+function printTable() {
+  window.print();
+}
+
+function downloadCSV() {
+  const rows = document.querySelectorAll("table tr");
+  let csv = [];
+
+  rows.forEach(row => {
+    const cols = row.querySelectorAll("td, th");
+    let data = [];
+    cols.forEach(col => data.push(`"${col.innerText}"`));
+    csv.push(data.join(","));
+  });
+
+  const blob = new Blob([csv.join("\n")], { type: "text/csv" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "labs.csv"; // 🔥 changed name
+  a.click();
+}
+
+async function downloadPDF() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+
+  doc.text("Labs Report", 14, 15);
+
+  const headers = [["Lab Name","Code","Type","Devices","Status"]];
+
+  const data = allLabs.map(l => [
+    l.lab_name,
+    l.lab_code || "-",
+    l.lab_type || "-",
+    l.devices ? l.devices.length : 0,
+    l.is_under_maintenance 
+      ? "Maintenance" 
+      : (l.is_active ? "Active" : "Inactive")
+  ]);
+
+  doc.autoTable({
+    head: headers,
+    body: data,
+    startY: 20
+  });
+
+  doc.save("labs.pdf");
+}
+
+</script>
+
+</body>
+</html>

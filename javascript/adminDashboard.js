@@ -7,7 +7,11 @@ async function loadDashboard() {
         console.log(session) ;
     }
     console.log(session);
-    document.getElementById("userName").textContent = session.user.user_metadata.full_name;
+    const userMeta = session.user.user_metadata;
+
+const name = userMeta.full_name || userMeta.email;
+
+document.getElementById("userName").innerText = name;
     window.profile = session.user.user_metadata.email ;
     console.log("Email : " + window.profile);
     const orgID = sessionStorage.getItem("organizationID");
@@ -46,21 +50,20 @@ console.log("Token:", token);
 
     // Unique labs count
     const labs = new Set(complaints.map(c => c.labs?.lab_name));
-    document.getElementById("totalLabs").innerText = labs.size;
     getUserRole();
 
     // 🔹 Load Table
     loadTable(complaints);
     updateSystemHealth(result.data);
 
-    loadNotifications(complaints);
-
     renderOverviewChart(complaints);
     loadUsers();
+    renderReports(complaints);
 
-    loadDashboardLabs();
+    // loadDashboardLabs();
     updateComplaintUI(complaints);
     loadDepartments();
+    loadDevices();
 
   } catch (err) {
     console.error("Dashboard Error:", err);
@@ -122,11 +125,7 @@ function loadTable(complaints) {
           ${c.title}
         </td>
 
-        <td class="px-6 py-4 text-center">
-          <span class="px-3 py-1 text-[10px] font-bold rounded-full ${getStatusColor(c.status)} uppercase">
-            ${c.status}
-          </span>
-        </td>
+        <td class="px-6 py-4">${getStatColor(c.status)}</td>
 
         <td class="px-6 py-4 text-right text-xs text-slate-400">
           ${formatTime(c.created_at)}
@@ -137,7 +136,7 @@ function loadTable(complaints) {
     table.innerHTML += row;
   });
 }
-function getStatusColor(status) {
+function getStatColor(status) {
   if (status === "PENDING") {
     return `<span class="px-3 py-1 text-[10px] font-bold rounded-full bg-yellow-100 text-yellow-600 px-2 py-1 rounded">Pending</span>`;
   }
@@ -330,75 +329,107 @@ function closeUserModal() {
 }
 
 // Open Lab Modal
-function openLabModal() {
-  const modal = document.getElementById("labModal");
-  modal.classList.remove("hidden");
-  modal.classList.add("flex");
-  loadTechnicians();
+let currentAdmin = {}; // fetched after login
+
+// Open Modal & Load Technicians
+async function openLabModal() {
+  document.getElementById("labModal").classList.remove("hidden");
+  await loadTechnicians();
 }
 
-// Close Lab Modal
+// Close Modal
 function closeLabModal() {
-  const modal = document.getElementById("labModal");
-  modal.classList.add("hidden");
-  modal.classList.remove("flex");
+  document.getElementById("labModal").classList.add("hidden");
+  document.getElementById("createLabForm").reset();
 }
 
-async function createLab() {
-  document.getElementById("createLabForm").addEventListener("submit", async function (e) {
-  e.preventDefault();
+// Load Technicians into Dropdown
+async function loadTechnicians() {
+  const select = document.getElementById("technicianSelect");
+  select.innerHTML = `<option value="">Select Technician</option>`; // reset
+  const { data } = await supabaseClient.auth.getSession();
+    const token = data.session?.access_token;
 
-  const lab_name = document.getElementById("labName").value.trim();
-  const lab_code = document.getElementById("labCode").value.trim();
-  const lab_type = document.getElementById("labType").value;
-  const technician_id = document.getElementById("technicianID").value.trim();
-  const name = document.getElementById("technicianName").value.trim();
+  try {
+    const res = await fetch("https://pbcnboxtlrymczzpppyl.supabase.co/functions/v1/get-students-technicians", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+      body: JSON.stringify({ organization_id: window.pro.profile.organization_id})
+    });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error);
 
-  // const { data, error } = await window.supabaseClient.auth.signUp({
-  //     email: technician_id,
-  //     password: password,
-  //     options: {
-  //       data: {
-  //         full_name: name
-  //       },
-  //     }
-  //   });
+    data.technicians.forEach(tech => {
+      const option = document.createElement("option");
+      option.value = tech.id;
+      option.textContent = tech.name || tech.email;
+      select.appendChild(option);
+    });
+  } catch (err) {
+    console.error("Failed to load technicians:", err);
+    alert("Could not fetch technicians.");
+  }
+}
 
-  if (!lab_name || !lab_code) {
-    alert("Please fill all required fields");
+// Create Lab & Assign Technician
+async function createLab(event) {
+  event.preventDefault();
+
+  const labName = document.getElementById("labName").value.trim();
+  const labCode = document.getElementById("labCode").value.trim();
+  const labType = document.getElementById("labType").value;
+  const technicianID = document.getElementById("technicianSelect").value;
+  const { data } = await supabaseClient.auth.getSession();
+    const token = data.session?.access_token;
+
+  if (!labName || !labCode || !labType || !technicianID) {
+    alert("Please fill all required fields.");
     return;
   }
 
-  const { data: sessionData } = await supabaseClient.auth.getSession();
-  const token = sessionData.session.access_token;
+  try {
+    // 1. Create Lab
+    const labRes = await fetch("https://pbcnboxtlrymczzpppyl.supabase.co/functions/v1/create-lab", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        lab_name: labName,
+        lab_code: labCode,
+        lab_type: labType,
+        target_department_id: currentAdmin.department_id
+      })
+    });
+    const labData = await labRes.json();
+    if (!labData.success) throw new Error(labData.error);
 
-  const response = await fetch("https://pbcnboxtlrymczzpppyl.supabase.co/functions/v1/quick-processor", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`
-    },
-    body: JSON.stringify({
-      lab_name,
-      lab_code,
-      lab_type,
-      technician_id,
-      organization_id: CURRENT_ORG_ID,
-      department_id: CURRENT_DEPT_ID
-    })
-  });
+    // 2. Assign Technician
+    const techRes = await fetch("https://pbcnboxtlrymczzpppyl.supabase.co/functions/v1/assign-technician-to-lab", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        lab_id: labData.lab_id,
+        technician_id: technicianID
+      })
+    });
+    const techData = await techRes.json();
+    if (!techData.success) throw new Error(techData.error);
 
-  const result = await response.json();
-
-  if (!response.ok) {
-    alert("Error: " + result.error);
-    return;
+    alert("Lab created and technician assigned successfully!");
+    closeLabModal();
+    // Optionally, refresh the lab table or list
+  } catch (err) {
+    console.error("Error creating lab:", err);
+    alert("Failed to create lab: " + err.message);
   }
-
-  alert("Lab Created Successfully!");
-  closeLabModal();
-  location.reload(); // refresh table
-});
 }
 
 async function sendToMailOTP(email) {
@@ -594,7 +625,7 @@ function renderUsers(users) {
     return;
   }
 
-  users.forEach(user => {
+  users.slice(0.5).forEach(user => {
     const name = user.name || "Unknown";
     const email = user.email || "N/A";
     const role = user.role;
@@ -702,16 +733,17 @@ async function getUserRole() {
     const dataRes = await response.json();
     window.pro = dataRes ;
 
-    console.log("Full Response:", dataRes);
+    console.log("User Info:", dataRes);
 
     // ✅ Validate response
     if (!dataRes.role) {
       throw new Error("Invalid response: role missing");
     }
+    toggleAddUserButton(dataRes);
+    renderLabsDashboard(dataRes.level);
 
     // ✅ Store data safely
     localStorage.setItem("userData", JSON.stringify(dataRes));
-
     // 🔥 Use it
     handleRole(dataRes);
 
@@ -720,6 +752,19 @@ async function getUserRole() {
   } catch (err) {
     console.error("getUserRole Error:", err.message);
     return null;
+  }
+}
+// Call this after fetching admin info
+function toggleAddUserButton(dataRes) {
+  console.log("DataRes : ",dataRes);
+  const btn = document.getElementById("createLabBtn");
+  const deptTab = document.getElementById("departmentsTab");
+  if (dataRes.level === "ORG_ADMIN") {
+    btn.style.display = "none"; // Show button
+    deptTab.style.display = "block";
+  } else {
+    btn.style.display = "inline-block"; // Hide button for DEPARTMENT_ADMIN
+    deptTab.style.display = "none";
   }
 }
 function handleRole(data) {
@@ -755,8 +800,7 @@ function handleRole(data) {
 }
 async function loadDashboardLabs() {
   try {
-    const { data } = await supabaseClient.auth.getSession();
-    const token = data.session?.access_token;
+    const { data: { session } } = await supabaseClient.auth.getSession();
 
     // 🔥 Check token
     if (!token) {
@@ -771,7 +815,7 @@ async function loadDashboardLabs() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}` // ✅ CORRECT (with space)
+          "Authorization": `Bearer ${session.access_token}` // ✅ CORRECT (with space)
         },
         body: JSON.stringify({
           organization_id: orgID
@@ -881,7 +925,7 @@ function updateComplaintUI(complaints) {
 
     const row = `
       <tr class="border-b hover:bg-slate-50">
-        <td class="p-3">${c.issue || "No Issue"}</td>
+        <td class="p-3">${c.title || "No Issue"}</td>
         <td class="p-3">${c.labs?.lab_name || "-"}</td>
         <td class="p-3 text-center">
           <span class="px-2 py-1 rounded-full text-xs font-semibold ${statusClass}">
@@ -908,80 +952,6 @@ function getLabStatusColor(status) {
     case "HIGH":
     case "OPEN":
       return "bg-red-100 text-red-700";
-
-    default:
-      return "bg-gray-100 text-gray-700";
-  }
-}
-
-
-
-function toggleNotifications() {
-  const box = document.getElementById("notificationBox");
-  box.classList.toggle("hidden");
-}
-
-function loadNotifications(complaints) {
-  const list = document.getElementById("notificationList");
-
-  // 🔥 Filter only important statuses
-  const filtered = complaints.filter(c =>
-    ["OPEN", "PENDING", "IN_PROGRESS"].includes(c.status)
-  );
-
-  if (filtered.length === 0) {
-    list.innerHTML = `
-      <p class="p-4 text-slate-400 text-center">
-        No important notifications
-      </p>
-    `;
-    document.getElementById("notifCount").innerText = 0;
-    return;
-  }
-
-  document.getElementById("notifCount").innerText = filtered.length;
-
-  // 🔥 Render
-  list.innerHTML = filtered.slice(0, 5).map(c => {
-    const statusClass = getNotificationComplaintStatusColor(c.status);
-
-    return `
-      <div class="p-3 border-b hover:bg-slate-50 cursor-pointer">
-
-        <!-- 🔹 TOP ROW (Issue + Status side by side) -->
-        <div class="flex justify-between items-center">
-          <p class="font-medium text-sm">
-            ${c.issue || "New Issue"}
-          </p>
-
-          <span class="text-xs px-2 py-1 rounded-full font-semibold ${statusClass}">
-            ${c.status}
-          </span>
-        </div>
-
-        <!-- 🔹 Lab Name BELOW -->
-        <p class="text-xs text-slate-500 mt-1">
-          ${c.labs?.lab_name || "-"}
-        </p>
-
-      </div>
-    `;
-  }).join("");
-}
-function getNotificationComplaintStatusColor(status) {
-  switch (status) {
-    case "MAINTENANCE":
-    case "IN_PROGRESS":
-    case "PENDING":
-      return "bg-amber-100 text-amber-700";
-
-    case "HIGH":
-    case "OPEN":
-      return "bg-red-100 text-red-700";
-
-    case "RESOLVED":
-    case "ACTIVE":
-      return "bg-emerald-100 text-emerald-700";
 
     default:
       return "bg-gray-100 text-gray-700";
@@ -1106,4 +1076,460 @@ function renderDepartmentTable(departments) {
 
     tbody.appendChild(row);
   });
+}
+
+async function fetchLabsData(role) {
+  try {
+    const { data } = await supabaseClient.auth.getSession();
+    const token = data.session?.access_token;
+    const res = await fetch("https://pbcnboxtlrymczzpppyl.supabase.co/functions/v1/get-lab-architecture", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+      body: JSON.stringify({ role : role})
+    });
+
+    const result = await res.json();
+    if (!result.success) throw new Error(result.error);
+
+    return result.data;
+  } catch (err) {
+    console.error("Error fetching labs:", err);
+    return null;
+  }
+}
+
+function populateStats(data, role) {
+  let activeLabs = 0;
+  let maintenanceDue = 0;
+
+  let labsList = [];
+
+  if (role === "ORG_ADMIN") {
+    data.departments.forEach(dept => {
+      if (dept.labs) labsList.push(...dept.labs);
+    });
+  } else if (role === "DEPARTMENT_ADMIN" || role === "STUDENT") {
+    labsList = data.labs || [];
+  } else if (role === "TECHNICIAN") {
+    labsList = data.labs || [];
+  }
+
+  const totalLabs = labsList.length;
+  console.log("Total Labs : ",totalLabs);
+  activeLabs = labsList.filter(l => l.is_active && !l.is_under_maintenance).length;
+  maintenanceDue = labsList.filter(l => l.is_under_maintenance).length;
+
+  const totalEl = document.getElementById("totalLabsTab");
+const activeEl = document.getElementById("activeLabs");
+const maintenanceEl = document.getElementById("maintenanceLabs");
+
+if (!totalEl || !activeEl || !maintenanceEl) {
+  console.error("Stats elements not found in DOM");
+  return;
+}
+
+totalEl.innerText = totalLabs;
+activeEl.innerText = activeLabs;
+maintenanceEl.innerText = maintenanceDue;
+document.getElementById("totalLabs").innerText = totalLabs;
+}
+function populateLabsTable(data, role) {
+  const tbody = document.getElementById("labTable");
+  tbody.innerHTML = "";
+
+  let labsList = [];
+
+  if (role === "ORG_ADMIN") {
+    data.departments.forEach(dept => {
+      if (dept.labs) labsList.push(...dept.labs);
+    });
+  } else if (role === "DEPARTMENT_ADMIN" || role === "STUDENT") {
+    labsList = data.labs || [];
+  } else if (role === "TECHNICIAN") {
+    labsList = data.labs || [];
+  }
+
+  labsList.slice(0, 3).forEach(lab => {
+    const status = lab.is_active
+      ? lab.is_under_maintenance ? "Maintenance" : "Active"
+      : "Inactive";
+
+    const row = document.createElement("tr");
+    row.innerHTML = `
+      <td class="px-6 py-4 text-sm font-bold">${lab.lab_code}</td>
+      <td class="px-6 py-4 text-sm text-slate-600">${lab.lab_name}</td>
+      <td class="px-6 py-4 text-sm text-slate-600">${lab.lab_type}</td>
+      <td class="px-6 py-4 text-right">${getStatusBadge(status)}</td>
+    `;
+    tbody.appendChild(row);
+  });
+}
+function getStatusBadge(status) {
+  if (status === "Active") {
+    return `<span class="px-3 py-1 text-[10px] font-bold rounded-full bg-green-100 text-green-600 px-2 py-1 rounded">ACTIVE</span>`;
+  }
+  if (status === "Inactive") {
+    return `<span class="px-3 py-1 text-[10px] font-bold rounded-full bg-red-100 text-red-600 px-2 py-1 rounded">INACTIVE</span>`;
+  }
+  return status;
+}
+async function renderLabsDashboard(role) {
+  const data = await fetchLabsData(role);
+  if (!data) return;
+
+  populateStats(data, role);
+  populateLabsTable(data, role);
+}
+
+function renderReports(complaints) {
+  renderStatusChart(complaints);
+  renderPriorityChart(complaints);
+  renderTimelineChart(complaints);
+}
+let statusChart;
+
+function renderStatusChart(complaints) {
+  const statusCount = {};
+
+  complaints.forEach(c => {
+    statusCount[c.status] = (statusCount[c.status] || 0) + 1;
+  });
+
+  const ctx = document.getElementById("statusChart");
+
+  if (statusChart) statusChart.destroy();
+
+  statusChart = new Chart(ctx, {
+    type: "doughnut",
+    data: {
+      labels: Object.keys(statusCount),
+      datasets: [{
+        data: Object.values(statusCount),
+        backgroundColor: [
+          "#3b82f6", // blue
+          "#6366f1", // indigo
+          "#ef4444", // red
+          "#10b981", // green
+          "#f59e0b"  // yellow
+        ]
+      }]
+    }
+  });
+}
+let priorityChart;
+
+function renderPriorityChart(complaints) {
+  const priorityCount = {};
+
+  complaints.forEach(c => {
+    priorityCount[c.priority] = (priorityCount[c.priority] || 0) + 1;
+  });
+
+  const ctx = document.getElementById("priorityChart");
+
+  if (priorityChart) priorityChart.destroy();
+
+  priorityChart = new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels: Object.keys(priorityCount),
+      datasets: [{
+        label: "Complaints",
+        data: Object.values(priorityCount),
+        backgroundColor: [
+          "#ef4444", // HIGH → red
+          "#f59e0b", // MEDIUM → yellow
+          "#10b981"  // LOW → green
+        ]
+      }]
+    }
+  });
+}
+let timelineChart;
+
+function renderTimelineChart(complaints) {
+  const dateCount = {};
+
+  complaints.forEach(c => {
+    const date = new Date(c.created_at).toLocaleDateString();
+    dateCount[date] = (dateCount[date] || 0) + 1;
+  });
+
+  const ctx = document.getElementById("timelineChart");
+
+  if (timelineChart) timelineChart.destroy();
+
+  timelineChart = new Chart(ctx, {
+    type: "line",
+    data: {
+      labels: Object.keys(dateCount),
+      datasets: [{
+        label: "Complaints Over Time",
+        data: Object.values(dateCount),
+        borderColor: "#3b82f6",
+        backgroundColor: "rgba(59, 130, 246, 0.2)",
+        fill: true,
+        tension: 0.4
+      }]
+    }
+  });
+}
+const colorMap = {
+  OPEN: "#ef4444",
+  IN_PROGRESS: "#3b82f6",
+  RESOLVED: "#10b981"
+};
+
+async function loadAdminProfile() {
+  const { data } = await supabaseClient.auth.getSession();
+    const token = data.session?.access_token;
+
+  const res = await fetch("https://pbcnboxtlrymczzpppyl.supabase.co/functions/v1/get-user-profile", {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+
+  const response = await res.json();
+
+  if (response.role !== "ADMIN") return;
+
+  const profile = response.profile;
+
+  // Name + Email
+  document.getElementById("a_name").innerText = profile.name || "Admin";
+  document.getElementById("a_email").innerText = data.email;
+
+  // Avatar Initial
+  document.getElementById("admin_avatar").innerText =
+    (profile.name?.charAt(0) || "A").toUpperCase();
+
+  // Info
+  document.getElementById("a_level").innerText = profile.admin_level;
+  document.getElementById("a_department").innerText = profile.department_name?.name || "-";
+  document.getElementById("a_org").innerText = profile.organization_name?.name || "-";
+
+  // Insights (dynamic)
+  document.getElementById("a_insight1").innerText =
+    `You are a Level ${profile.admin_level} administrator.`;
+
+  document.getElementById("a_insight2").innerText =
+    `Managing department: ${profile.department_name?.name || "N/A"}`;
+
+  document.getElementById("a_insight3").innerText =
+    `Organization: ${profile.organization_name?.name || "N/A"}`;
+}
+function gotoViewAdminAllUsers(){
+  window.location.href = "viewAdminAllUsers.html" ;
+}
+function gotoViewAllLabsInfo(){
+  window.location.href = "viewADminAllLabs.html" ;
+}
+
+let allDevices = [];
+
+async function loadDevices(role = "ADMIN") {
+  try {
+    const { data } = await supabaseClient.auth.getSession();
+    const token = data.session?.access_token;
+
+    const res = await fetch("https://pbcnboxtlrymczzpppyl.supabase.co/functions/v1/get-lab-architecture", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + token
+      },
+      body: JSON.stringify({ role : role})
+    });
+
+    const result = await res.json();
+
+    if (!result.success) {
+      console.error(result.error);
+      return;
+    }
+
+    // 🔥 Flatten labs → devices
+    let devices = [];
+
+    if (result.data.departments) {
+      result.data.departments.forEach(dep => {
+        dep.labs.forEach(lab => {
+          lab.devices.forEach(d => {
+            devices.push({
+              ...d,
+              lab_name: lab.lab_name
+            });
+          });
+        });
+      });
+    } else if (result.data.labs) {
+      result.data.labs.forEach(lab => {
+        lab.devices.forEach(d => {
+          devices.push({
+            ...d,
+            lab_name: lab.lab_name
+          });
+        });
+      });
+    }
+
+    allDevices = devices;
+
+    renderDevices(devices);
+    updateDeviceStats(devices);
+
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+function renderDevices(devices) {
+  const table = document.getElementById("deviceTable");
+  table.innerHTML = "";
+
+  devices.forEach(d => {
+    table.innerHTML += `
+      <tr class="border-b">
+        <td class="px-6 py-3">${d.device_code}</td>
+        <td class="px-6 py-3">${d.device_name}</td>
+        <td class="px-6 py-3">${d.device_type}</td>
+        <td class="px-6 py-3">${d.lab_name}</td>
+        <td class="px-6 py-3 text-right">
+          ${d.is_active 
+            ? '<span class="px-3 py-1 text-[10px] font-bold rounded-full bg-green-100 text-green-600 px-2 py-1 rounded">ACTIVE</span>' 
+            : '<span class="px-3 py-1 text-[10px] font-bold rounded-full bg-red-100 text-red-600 px-2 py-1 rounded">INACTIVE</span>'}
+        </td>
+      </tr>
+    `;
+  });
+}
+
+function updateDeviceStats(devices) {
+  document.getElementById("totalDevices").innerText = devices.length;
+
+  const active = devices.filter(d => d.is_active).length;
+  document.getElementById("activeDevices").innerText = active;
+
+  const maintenance = devices.filter(d => !d.is_active).length;
+  document.getElementById("maintenanceDevices").innerText = maintenance;
+}
+
+
+let labsList = [];
+
+async function loadLabsDropdown() {
+  try {
+    const { data } = await supabaseClient.auth.getSession();
+    const token = data.session?.access_token;
+
+    const res = await fetch("https://pbcnboxtlrymczzpppyl.supabase.co/functions/v1/get-lab-architecture", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + token
+      },
+      body: JSON.stringify({
+        role: "ADMIN" // or dynamic role
+      })
+    });
+
+    const result = await res.json();
+
+    if (!result.success) {
+      console.error(result.error);
+      return;
+    }
+
+    // 🔥 Handle both ORG_ADMIN & DEPT_ADMIN formats
+    let labs = [];
+
+    if (result.data.departments) {
+      result.data.departments.forEach(d => {
+        d.labs?.forEach(l => labs.push(l));
+      });
+    } else if (result.data.labs) {
+      labs = result.data.labs;
+    }
+
+    labsList = labs;
+
+    const select = document.getElementById("lab_select");
+    select.innerHTML = `<option value="">Select Lab</option>`;
+
+    labs.forEach(l => {
+      const option = document.createElement("option");
+      option.value = l.id;
+      option.textContent = `${l.lab_name} (${l.lab_code || ""})`;
+      select.appendChild(option);
+    });
+
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+async function submitDevice() {
+  try {
+    const labId = document.getElementById("lab_select").value;
+    const name = document.getElementById("device_name").value;
+    const code = document.getElementById("device_code").value;
+    const type = document.getElementById("device_type").value;
+    const other = document.getElementById("device_type_other").value;
+
+    if (!labId || !name || !code || !type) {
+      alert("Please fill all fields");
+      return;
+    }
+
+    const { data } = await supabaseClient.auth.getSession();
+    const token = data.session?.access_token;
+
+    const res = await fetch("https://pbcnboxtlrymczzpppyl.supabase.co/functions/v1/create-device", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + token
+      },
+      body: JSON.stringify({
+        lab_id: labId,
+        device_name: name,
+        device_code: code,
+        device_type: type,
+        device_type_other: type === "OTHER" ? other : null
+      })
+    });
+
+    const result = await res.json();
+
+    if (!result.success) {
+      alert(result.error);
+      return;
+    }
+
+    alert("✅ Device Added Successfully");
+
+    closeDeviceModal();
+    loadLabs(); // refresh UI
+
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+function openDeviceModal() {
+  document.getElementById("deviceModal").classList.remove("hidden");
+  document.getElementById("deviceModal").classList.add("flex");
+  loadLabsDropdown();
+}
+
+function closeDeviceModal() {
+  document.getElementById("deviceModal").classList.add("hidden");
+}
+
+function viewAllDevices(){
+    window.location.href = "viewAdminAllDevices.html" ;
 }

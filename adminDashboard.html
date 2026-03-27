@@ -76,20 +76,32 @@
 <span class="material-symbols-outlined text-[20px]">science</span>
             Labs
         </a>
-<a class="sidebar-link flex items-center gap-3 px-4 py-2.5 rounded-lg sidebar-link-inactive hover:bg-[var(--sidebar-hover)] transition-colors font-medium" href="#departments"
+<a class="sidebar-link flex items-center gap-3 px-4 py-2.5 rounded-lg sidebar-link-inactive hover:bg-[var(--sidebar-hover)] transition-colors font-medium" href="#devices"
+    onclick="setActive(this); showTab('devices')">
+<span class="material-symbols-outlined text-[20px]">desktop_windows</span>
+            Devices
+        </a>
+<li id="departmentsTab" class="nav-item">
+<a id="departmentsTab" class="sidebar-link flex items-center gap-3 px-4 py-2.5 rounded-lg sidebar-link-inactive hover:bg-[var(--sidebar-hover)] transition-colors font-medium" href="#departments"
     onclick="setActive(this); showTab('departments')">
 <span class="material-symbols-outlined text-[20px]">devices</span>
             Departments
         </a>
+        </li>
 <a class="sidebar-link flex items-center gap-3 px-4 py-2.5 rounded-lg sidebar-link-inactive hover:bg-[var(--sidebar-hover)] transition-colors font-medium" href="#complaints"
     onclick="setActive(this); showTab('complaints')">
 <span class="material-symbols-outlined text-[20px]">report_problem</span>
             Complaints
         </a>
-<a class="sidebar-link flex items-center gap-3 px-4 py-2.5 rounded-lg sidebar-link-inactive hover:bg-[var(--sidebar-hover)] transition-colors font-medium" href="#reports"
-  onclick="setActive(this); showTab('reports')">
+<a class="sidebar-link flex items-center gap-3 px-4 py-2.5 rounded-lg sidebar-link-inactive hover:bg-[var(--sidebar-hover)] transition-colors font-medium" href="#reportsTab"
+  onclick="setActive(this); showTab('reportsTab')">
 <span class="material-symbols-outlined text-[20px]">bar_chart</span>
             Reports
+        </a>
+<a class="sidebar-link flex items-center gap-3 px-4 py-2.5 rounded-lg sidebar-link-inactive hover:bg-[var(--sidebar-hover)] transition-colors font-medium" href="#adminProfileTab"
+  onclick="setActive(this); showTab('adminProfileTab'); loadAdminProfile()">
+<span class="material-symbols-outlined text-sm">person</span>
+            Profile
         </a>
 </nav>
 <div class="p-4 border-t border-[var(--sidebar-border)]">
@@ -103,12 +115,13 @@
 <header class="h-16 bg-white border-b border-[var(--border-color)] flex items-center justify-between px-8 shrink-0">
 <div class="flex items-center gap-4 flex-1">
 <h2 class="text-lg font-semibold text-[var(--text-primary)]">Overview</h2>
-<div class="relative w-96 ml-8">
+<div class="hidden relative w-96 ml-8">
 <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">search</span>
 <input class="w-full bg-slate-50 border border-slate-200 rounded-md pl-10 pr-4 py-1.5 text-sm focus:ring-2 focus:ring-[var(--accent-blue)] focus:border-transparent text-slate-700" placeholder="Search records..." type="text"/>
 </div>
 </div>
 <div class="flex items-center gap-6">
+<div class="hidden">
 <button onclick="toggleNotifications()" class="relative text-slate-500 hover:text-[var(--accent-blue)] transition-colors">
 <span class="material-symbols-outlined">notifications</span>
 <span class="absolute top-0 right-0 w-2 h-2 bg-[var(--accent-red)] rounded-full border-2 border-white"></span>
@@ -125,9 +138,10 @@
     <p class="p-4 text-slate-400 text-center">No notifications</p>
   </div>
 </div>
+</div>
 <div class="flex items-center gap-3 cursor-pointer pl-6 border-l border-slate-200">
 <div class="text-right">
-<p class="text-xs font-bold text-[var(--text-primary)]"><span id="userName"></span></p>
+<p id="userName" class="text-xs font-bold text-[var(--text-primary)]"></p>
 <p class="text-[10px] text-slate-500 uppercase tracking-tighter">System Administrator</p>
 </div>
 <div class="w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center border border-blue-200">
@@ -151,7 +165,7 @@
 </div>
 <div class="mt-4 flex items-center text-xs text-emerald-600 font-medium">
 <span class="material-symbols-outlined text-xs mr-1">trending_up</span>
-<span>+12% from last month</span>
+<span></span>
 </div>
 </div>
 <div class="bg-white border border-[var(--border-color)] p-6 rounded-xl card-shadow">
@@ -165,7 +179,7 @@
 </div>
 </div>
 <div class="mt-4 flex items-center text-xs text-slate-400">
-<span>Active research facilities</span>
+<span></span>
 </div>
 </div>
 <div class="bg-white border border-[var(--border-color)] p-6 rounded-xl card-shadow border-l-4 border-l-red-500">
@@ -187,7 +201,6 @@
 <div class="bg-white border border-[var(--border-color)] rounded-xl card-shadow overflow-hidden">
 <div class="p-6 border-b border-[var(--border-color)] flex justify-between items-center">
 <h3 class="text-lg font-bold text-[var(--text-primary)]">Recent Activity</h3>
-<button onclick="gotoComplaints()" class="text-[var(--accent-blue)] text-sm font-semibold hover:underline px-3 py-1 bg-blue-50 rounded-md">View All Complaints</button>
 </div>
 <div class="overflow-x-auto">
 <table class="w-full text-left">
@@ -338,8 +351,8 @@
   <div class="bg-white border border-[var(--border-color)] rounded-xl card-shadow overflow-hidden">
     <div class="p-6 border-b border-[var(--border-color)] flex justify-between items-center">
       <h3 class="text-lg font-bold text-[var(--text-primary)]">All Users</h3>
-      <button class="text-[var(--accent-blue)] text-sm font-semibold hover:underline px-3 py-1 bg-blue-50 rounded-md">
-        Export
+      <button onclick="gotoViewAdminAllUsers()" class="text-[var(--accent-blue)] text-sm font-semibold hover:underline px-3 py-1 bg-blue-50 rounded-md">
+        View All Users
       </button>
     </div>
 
@@ -377,9 +390,10 @@
         oninput=""
       />
       <button
+        id="createLabBtn"
         onclick="openLabModal()"
         class="px-4 py-2 rounded-lg bg-[var(--accent-blue)] text-white text-sm font-semibold hover:opacity-90">
-        + Add User
+        + Create Lab
       </button>
     </div>
   </div>
@@ -388,7 +402,7 @@
       <div class="flex justify-between items-start">
         <div>
           <p class="text-slate-500 text-sm font-medium">Total Labs</p>
-          <h3 id="totalLabs" class="text-3xl font-bold mt-1 text-[var(--text-primary)]"></h3>
+          <h3 id="totalLabsTab" class="text-3xl font-bold mt-1 text-[var(--text-primary)]"></h3>
         </div>
         <div class="p-3 bg-blue-50 rounded-lg">
           <span class="material-symbols-outlined text-[var(--accent-blue)]">group</span>
@@ -423,7 +437,7 @@
   <div class="bg-white border border-[var(--border-color)] rounded-xl card-shadow overflow-hidden">
     <div class="p-6 border-b border-[var(--border-color)] flex justify-between items-center">
       <h3 class="text-lg font-bold text-[var(--text-primary)]">All Labs</h3>
-      <button class="text-[var(--accent-blue)] text-sm font-semibold hover:underline px-3 py-1 bg-blue-50 rounded-md">
+      <button onclick="gotoViewAllLabsInfo()" class="text-[var(--accent-blue)] text-sm font-semibold hover:underline px-3 py-1 bg-blue-50 rounded-md">
         View All Labs Info
       </button>
       </div>
@@ -444,6 +458,95 @@
     </div>
     </div>
   </div>
+<div id="devices" class="tab hidden p-8 space-y-6">
+
+  <!-- Header -->
+  <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+    <div>
+      <h2 class="text-2xl font-bold text-[var(--text-primary)]">Devices</h2>
+      <p class="text-sm text-slate-500">Manage Devices in Labs</p>
+    </div>
+
+    <div class="flex gap-2">
+      <button onclick="openDeviceModal()"
+        class="px-4 py-2 rounded-lg bg-[var(--accent-blue)] text-white text-sm font-semibold hover:opacity-90">
+        + Add Device
+      </button>
+    </div>
+  </div>
+
+  <!-- 🔹 Cards -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+    <!-- Total Devices -->
+    <div class="bg-white border border-[var(--border-color)] p-6 rounded-xl card-shadow">
+      <div class="flex justify-between items-start">
+        <div>
+          <p class="text-slate-500 text-sm font-medium">Total Devices</p>
+          <h3 id="totalDevices" class="text-3xl font-bold mt-1">0</h3>
+        </div>
+        <div class="p-3 bg-blue-50 rounded-lg">
+          <span class="material-symbols-outlined text-blue-600">devices</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Active Devices -->
+    <div class="bg-white border border-[var(--border-color)] p-6 rounded-xl card-shadow">
+      <div class="flex justify-between items-start">
+        <div>
+          <p class="text-slate-500 text-sm font-medium">Active Devices</p>
+          <h3 id="activeDevices" class="text-3xl font-bold mt-1">0</h3>
+        </div>
+        <div class="p-3 bg-green-50 rounded-lg">
+          <span class="material-symbols-outlined text-green-600">check_circle</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Maintenance Devices -->
+    <div class="bg-white border border-[var(--border-color)] p-6 rounded-xl card-shadow border-l-4 border-l-red-500">
+      <div class="flex justify-between items-start">
+        <div>
+          <p class="text-slate-500 text-sm font-medium">Under Maintenance</p>
+          <h3 id="maintenanceDevices" class="text-3xl font-bold mt-1">0</h3>
+        </div>
+        <div class="p-3 bg-red-50 rounded-lg">
+          <span class="material-symbols-outlined text-red-600">build</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 🔹 Table -->
+  <div class="bg-white border border-[var(--border-color)] rounded-xl card-shadow overflow-hidden">
+
+    <div class="p-6 border-b flex justify-between items-center">
+      <h3 class="text-lg font-bold">All Devices</h3>
+      <button onclick="viewAllDevices()" class="text-[var(--accent-blue)] text-sm font-semibold hover:underline px-3 py-1 bg-blue-50 rounded-md">
+        View All Devices
+      </button>
+    </div>
+
+    <div class="overflow-x-auto" id="printSectionDevices">
+      <table class="w-full text-left">
+        <thead class="bg-slate-50 text-xs uppercase">
+          <tr>
+            <th class="px-6 py-4">Device Code</th>
+            <th class="px-6 py-4">Device Name</th>
+            <th class="px-6 py-4">Type</th>
+            <th class="px-6 py-4">Lab</th>
+            <th class="px-6 py-4 text-right">Status</th>
+          </tr>
+        </thead>
+        <tbody id="deviceTable"></tbody>
+      </table>
+    </div>
+
+  </div>
+
+</div>
 <div id="departments" class="tab hidden p-8 space-y-8">
 
   <!-- Header -->
@@ -574,7 +677,11 @@
   </div>
 
   <div class="bg-white border rounded-xl mt-6 overflow-hidden">
-    <div class="p-4 border-b font-semibold">Recent Complaints</div>
+    <div class="bg-white border border-[var(--border-color)] rounded-xl card-shadow overflow-hidden">
+<div class="p-6 border-b border-[var(--border-color)] flex justify-between items-center">
+<h3 class="text-lg font-bold text-[var(--text-primary)]">Recent Complaints</h3>
+    <button onclick="gotoComplaints()" class="text-[var(--accent-blue)] text-sm font-semibold hover:underline px-3 py-1 bg-blue-50 rounded-md">View All Complaints</button>
+    </div>
     <table class="w-full text-sm">
       <thead>
       <tr class="border-b">
@@ -587,29 +694,46 @@
     </table>
   </div>
 </div>
-<div id="reports" class="tab hidden p-8 space-y-6">
+</div>
+<div id="reportsTab" class="tab p-8 space-y-8 hidden">
 
-  <h2 class="text-2xl font-bold text-slate-800">Reports</h2>
+  <!-- Header -->
+  <div>
+    <h2 class="text-2xl font-bold text-[var(--text-primary)]">
+      Complaint Analytics Dashboard
+    </h2>
+    <p class="text-sm text-[var(--text-secondary)]">
+      Overview of complaints across labs, departments and technicians.
+    </p>
+  </div>
 
+  <!-- Charts -->
   <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-    <div class="bg-white p-6 rounded-xl border shadow-sm">
-      <h3 class="font-semibold mb-2">Monthly Usage Report</h3>
-      <p class="text-sm text-slate-500">Download lab usage summary.</p>
-      <button class="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-        Download PDF
-      </button>
+    <!-- Status Pie -->
+    <div class="bg-white p-4 rounded-xl shadow">
+      <h3 class="text-sm font-semibold mb-2 text-slate-500">
+        Status Distribution
+      </h3>
+      <canvas id="statusChart"></canvas>
     </div>
 
-    <div class="bg-white p-6 rounded-xl border shadow-sm">
-      <h3 class="font-semibold mb-2">Device Performance</h3>
-      <p class="text-sm text-slate-500">Analyze device performance trends.</p>
-      <button class="mt-4 px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">
-        View Analytics
-      </button>
+    <!-- Priority Bar -->
+    <div class="bg-white p-4 rounded-xl shadow">
+      <h3 class="text-sm font-semibold mb-2 text-slate-500">
+        Priority Breakdown
+      </h3>
+      <canvas id="priorityChart"></canvas>
     </div>
-
+</div>
+  <!-- Timeline -->
+  <div class="bg-white p-4 rounded-xl shadow">
+    <h3 class="text-sm font-semibold mb-2 text-slate-500">
+      Complaints Over Time
+    </h3>
+    <canvas id="timelineChart"></canvas>
   </div>
+
 </div>
 
 <!-- USER CREATE MODAL -->
@@ -656,110 +780,159 @@
     </form>
   </div>
 </div>
+<div id="adminProfileTab" class="tab p-8 hidden space-y-6">
 
+  <h2 class="text-2xl font-bold">Admin Profile</h2>
+
+  <!-- Top Section -->
+  <div class="bg-white p-6 rounded-xl shadow flex flex-col md:flex-row items-center gap-6">
+
+    <div id="admin_avatar" class="w-20 h-20 bg-purple-100 text-purple-600 flex items-center justify-center rounded-full text-3xl font-bold">
+      A
+    </div>
+
+    <div>
+      <h3 id="a_name" class="text-xl font-semibold"></h3>
+      <p id="a_email" class="text-sm text-slate-500"></p>
+      <p class="text-xs text-slate-400 mt-1">Administrator Account</p>
+    </div>
+
+  </div>
+
+  <!-- Info Section -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+    <!-- Basic Info -->
+    <div class="bg-white p-6 rounded-xl shadow space-y-3">
+      <h3 class="font-semibold text-slate-600 mb-2">Admin Information</h3>
+
+      <div>
+        <span class="text-slate-400 text-sm">Admin Level:</span> 
+        <span id="a_level"></span>
+      </div>
+
+      <div>
+        <span class="text-slate-400 text-sm">Department:</span> 
+        <span id="a_department"></span>
+      </div>
+
+      <div>
+        <span class="text-slate-400 text-sm">Organization:</span> 
+        <span id="a_org"></span>
+      </div>
+    </div>
+
+    <!-- Role Insights -->
+    <div class="bg-white p-6 rounded-xl shadow space-y-3">
+      <h3 class="font-semibold text-slate-600 mb-2">Admin Privileges</h3>
+
+      <div>✔ Manage Users</div>
+      <div>✔ Monitor Complaints</div>
+      <div>✔ Assign Technicians</div>
+      <div>✔ System Control Access</div>
+    </div>
+
+  </div>
+
+  <!-- Insights -->
+  <div class="bg-white p-6 rounded-xl shadow">
+    <h3 class="font-semibold text-slate-600 mb-4">Insights</h3>
+
+    <ul class="list-disc ml-5 text-sm text-slate-600 space-y-2">
+      <li id="a_insight1"></li>
+      <li id="a_insight2"></li>
+      <li id="a_insight3"></li>
+    </ul>
+  </div>
+
+  <!-- Actions -->
+  <div class="flex gap-3">
+    <button onclick="logoutUser()" class="px-4 py-2 bg-red-500 text-white rounded-lg">Logout</button>
+  </div>
+
+</div>
 <!-- CREATE LAB MODAL -->
 <div id="labModal" class="fixed inset-0 bg-black/30 hidden items-center justify-center z-50">
-
-<div class="bg-white w-full max-w-lg max-h-[85vh] flex flex-col rounded-xl border border-[var(--border-color)] card-shadow">
+  <div class="bg-white w-full max-w-lg max-h-[85vh] flex flex-col rounded-xl border border-[var(--border-color)] card-shadow">
     <!-- Modal Header -->
     <div class="flex justify-between items-center px-6 py-4 border-b border-[var(--border-color)]">
-      <h3 class="text-lg font-bold text-[var(--text-primary)]">
-        Create New Lab
-      </h3>
+      <h3 class="text-lg font-bold text-[var(--text-primary)]">Create New Lab</h3>
       <button onclick="closeLabModal()" class="text-slate-400 hover:text-red-500">
         <span class="material-symbols-outlined">close</span>
       </button>
     </div>
 
     <!-- Modal Body -->
-    <form id="createLabForm" class="p-6 space-y-5 overflow-y-auto">
+    <form id="createLabForm" class="p-6 space-y-5 overflow-y-auto" onsubmit="createLab(event)">
 
       <div>
-        <label class="block text-sm font-medium text-slate-600 mb-1">
-          Lab Name
-        </label>
+        <label class="block text-sm font-medium text-slate-600 mb-1">Lab Name</label>
         <input type="text" id="labName"
           class="w-full px-4 py-2 border border-[var(--border-color)] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent-blue)]"
           placeholder="Enter lab name" required />
       </div>
 
       <div>
-        <label class="block text-sm font-medium text-slate-600 mb-1">
-          Lab Code
-        </label>
+        <label class="block text-sm font-medium text-slate-600 mb-1">Lab Code</label>
         <input type="text" id="labCode"
           class="w-full px-4 py-2 border border-[var(--border-color)] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent-blue)]"
           placeholder="Enter lab code (e.g., HW-213)" required />
       </div>
 
       <div>
-        <label class="block text-sm font-medium text-slate-600 mb-1">
-          Lab Type
-        </label>
+        <label class="block text-sm font-medium text-slate-600 mb-1">Lab Type</label>
         <select id="labType"
           class="w-full px-4 py-2 border border-[var(--border-color)] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent-blue)]">
-          <option value="COMPUTER_HARDWARE">Computer Hardware</option>
-          <option value="SOFTWARE">Software</option>
-          <option value="NETWORKING">Networking</option>
+          <option value="GENERAL_COMPUTING">General Computing</option>
+<option value="PROGRAMMING">Programming</option>
+<option value="OPERATING_SYSTEMS">Operating Systems</option>
+<option value="DATA_STRUCTURES">Data Structures</option>
+<option value="DATABASE">Database</option>
+<option value="SOFTWARE_ENGINEERING">Software Engineering</option>
+<option value="COMPUTER_HARDWARE">Computer Hardware</option>
+<option value="EMBEDDED_SYSTEMS">Embedded Systems</option>
+<option value="IOT">IoT</option>
+<option value="ROBOTICS">Robotics</option>
+<option value="DIGITAL_ELECTRONICS">Digital Electronics</option>
+<option value="NETWORKING">Networking</option>
+<option value="CYBER_SECURITY">Cyber Security</option>
+<option value="ETHICAL_HACKING">Ethical Hacking</option>
+<option value="FORENSICS">Forensics</option>
+<option value="FIREWALL_LAB">Firewall Lab</option>
+<option value="DATA_SCIENCE">Data Science</option>
+<option value="AI_ML">AI / ML</option>
+<option value="BIG_DATA">Big Data</option>
+<option value="DATA_ANALYTICS">Data Analytics</option>
+<option value="CLOUD_COMPUTING">Cloud Computing</option>
+<option value="DEVOPS">DevOps</option>
+<option value="VIRTUALIZATION">Virtualization</option>
+<option value="CONTAINERIZATION">Containerization</option>
+<option value="COMPUTER_GRAPHICS">Computer Graphics</option>
+<option value="ANIMATION">Animation</option>
+<option value="GAME_DEVELOPMENT">Game Development</option>
+<option value="MULTIMEDIA">Multimedia</option>
+<option value="BLOCKCHAIN">Blockchain</option>
+<option value="AR_VR">AR / VR</option>
+<option value="QUANTUM_COMPUTING">Quantum Computing</option>
+<option value="RESEARCH_LAB">Research Lab</option>
+<option value="OTHERS">Others</option>
         </select>
       </div>
 
       <div>
-        <label class="block text-sm font-medium text-slate-600 mb-1">
-          Technician Name
-        </label>
-        <input type="text" id="technicianName"
-          class="w-full px-4 py-2 border border-[var(--border-color)] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent-blue)]"
-          placeholder="Enter registered email ID" required />
-      </div>
-
-      <div>
-        <label class="block text-sm font-medium text-slate-600 mb-1">
-          Technician ID
-        </label>
-        <input type="text" id="technicianID"
-          class="w-full px-4 py-2 border border-[var(--border-color)] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent-blue)]"
-          placeholder="Enter registered email ID" required />
-      </div>
-
-      <button type="button"
-          onclick="send()"
-          class="px-5 py-2 rounded-lg bg-[var(--accent-blue)] text-white text-sm font-semibold hover:opacity-90">
-          Send OTP
-        </button>
-
-      <div id="otpInput" class="hidden space-y-5">
-        <div>
-        <label class="block text-sm font-medium text-slate-600 mb-1">
-          OTP
-        </label>
-        <input type="text" id="otp"
-          class="w-full px-4 py-2 border border-[var(--border-color)] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent-blue)]"
-          placeholder="******" required />
-      </div>
-
-      <button type="button"
-          onclick="verify()"
-          class="px-5 py-2 rounded-lg bg-[var(--accent-blue)] text-white text-sm font-semibold hover:opacity-90">
-          Submit
-        </button>
+        <label class="block text-sm font-medium text-slate-600 mb-1">Technician</label>
+        <select id="technicianSelect"
+                class="w-full px-4 py-2 border border-[var(--border-color)] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent-blue)]">
+          <option value="">Select Technician</option>
+        </select>
       </div>
 
       <!-- Footer Buttons -->
-      <div id="footer" class="hidden flex justify-end gap-3 pt-4 border-t border-[var(--border-color)]">
-
-        <button type="button"
-          onclick="closeLabModal()"
-          class="px-4 py-2 rounded-lg border border-slate-300 text-slate-600 text-sm hover:bg-slate-100">
-          Cancel
-        </button>
-
+      <div id="labFooter" class="flex justify-end gap-3 pt-4 border-t border-[var(--border-color)]">
+        <button type="button" onclick="closeLabModal()"
+          class="px-4 py-2 rounded-lg border border-slate-300 text-slate-600 text-sm hover:bg-slate-100">Cancel</button>
         <button type="submit"
-          onclick="createLab()"
-          class="px-5 py-2 rounded-lg bg-[var(--accent-blue)] text-white text-sm font-semibold hover:opacity-90">
-          Create Lab
-        </button>
-
+          class="px-5 py-2 rounded-lg bg-[var(--accent-blue)] text-white text-sm font-semibold hover:opacity-90">Create Lab</button>
       </div>
 
     </form>
@@ -820,6 +993,123 @@
       </div>
 
     </form>
+  </div>
+</div>
+<div id="deviceModal" class="fixed inset-0 bg-black bg-opacity-40 hidden items-center justify-center z-50">
+
+  <div class="bg-white w-full max-w-lg rounded-xl shadow-lg p-6 space-y-4">
+
+    <h2 class="text-xl font-bold">Add Device</h2>
+
+    <!-- Device Name -->
+    <input id="device_name" type="text" placeholder="Device Name"
+      class="w-full p-2 border rounded-lg">
+
+    <!-- Device Code -->
+    <input id="device_code" type="text" placeholder="Device Code"
+      class="w-full p-2 border rounded-lg">
+
+    <!-- Device Type -->
+    <select id="device_type" onchange="handleDeviceType()" 
+  class="w-full p-2 border rounded-lg">
+
+  <option value="">Select Device Type</option>
+
+  <!-- Computing -->
+  <option value="DESKTOP">Desktop</option>
+  <option value="LAPTOP">Laptop</option>
+  <option value="WORKSTATION">Workstation</option>
+  <option value="THIN_CLIENT">Thin Client</option>
+
+  <!-- Servers -->
+  <option value="SERVER">Server</option>
+  <option value="VIRTUAL_SERVER">Virtual Server</option>
+
+  <!-- Networking -->
+  <option value="ROUTER">Router</option>
+  <option value="SWITCH">Switch</option>
+  <option value="FIREWALL">Firewall</option>
+  <option value="MODEM">Modem</option>
+  <option value="ACCESS_POINT">Access Point</option>
+  <option value="LOAD_BALANCER">Load Balancer</option>
+  <option value="NETWORK_CONTROLLER">Network Controller</option>
+
+  <!-- Power & Infra -->
+  <option value="UPS">UPS</option>
+  <option value="POWER_DISTRIBUTION_UNIT">Power Distribution Unit</option>
+  <option value="INVERTER">Inverter</option>
+  <option value="RACK">Rack</option>
+  <option value="COOLING_UNIT">Cooling Unit</option>
+
+  <!-- Peripheral Devices -->
+  <option value="PRINTER">Printer</option>
+  <option value="SCANNER">Scanner</option>
+  <option value="PLOTTER">Plotter</option>
+  <option value="PROJECTOR">Projector</option>
+  <option value="DISPLAY">Display</option>
+  <option value="SMART_BOARD">Smart Board</option>
+  <option value="WEBCAM">Webcam</option>
+
+  <!-- Storage -->
+  <option value="NAS">NAS</option>
+  <option value="SAN">SAN</option>
+  <option value="EXTERNAL_STORAGE">External Storage</option>
+
+  <!-- IoT & Embedded -->
+  <option value="IOT_DEVICE">IoT Device</option>
+  <option value="MICROCONTROLLER">Microcontroller</option>
+  <option value="SENSOR">Sensor</option>
+  <option value="ACTUATOR">Actuator</option>
+  <option value="GATEWAY">Gateway</option>
+
+  <!-- Robotics -->
+  <option value="ROBOTICS_UNIT">Robotics Unit</option>
+  <option value="ROBOTIC_ARM">Robotic Arm</option>
+  <option value="MOTOR_CONTROLLER">Motor Controller</option>
+  <option value="VISION_MODULE">Vision Module</option>
+
+  <!-- Electronics Lab -->
+  <option value="OSCILLOSCOPE">Oscilloscope</option>
+  <option value="LOGIC_ANALYZER">Logic Analyzer</option>
+  <option value="SIGNAL_GENERATOR">Signal Generator</option>
+  <option value="MULTIMETER">Multimeter</option>
+  <option value="POWER_SUPPLY_UNIT">Power Supply Unit</option>
+
+  <!-- Cyber / Forensics -->
+  <option value="FORENSICS_WORKSTATION">Forensics Workstation</option>
+  <option value="WRITE_BLOCKER">Write Blocker</option>
+  <option value="FORENSIC_STORAGE">Forensic Storage</option>
+  <option value="SECURITY_APPLIANCE">Security Appliance</option>
+
+  <!-- Media -->
+  <option value="AUDIO_SYSTEM">Audio System</option>
+  <option value="VIDEO_CAPTURE_DEVICE">Video Capture Device</option>
+
+  <!-- Virtualization -->
+  <option value="HYPERVISOR_NODE">Hypervisor Node</option>
+  <option value="VM_HOST">VM Host</option>
+
+  <!-- Other -->
+  <option value="OTHER">Other</option>
+
+</select>
+
+<!-- Other Type -->
+    <input id="device_type_other" type="text" placeholder="Enter Device Type"
+      class="w-full p-2 border rounded-lg hidden">
+
+<!-- Select Lab -->
+ <!-- 🔹 Lab Select -->
+<select id="lab_select" class="w-full p-2 border rounded-lg">
+  <option value="">Select Lab</option>
+</select>
+
+    <!-- Actions -->
+    <div class="flex justify-end gap-2">
+      <button onclick="closeDeviceModal()" class="px-4 py-2 bg-gray-200 rounded-lg">Cancel</button>
+      <button onclick="submitDevice()" class="px-4 py-2 bg-blue-600 text-white rounded-lg">Add</button>
+    </div>
+
   </div>
 </div>
 </main>

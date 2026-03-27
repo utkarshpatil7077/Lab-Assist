@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>All Devices</title>
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Libraries -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="javascript/supabase.js"></script>
+
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #f1f5f9;
+    }
+
+    .glass-card {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(226, 232, 240, 0.8);
+    }
+
+    .table-row:hover {
+      background-color: #f8fafc;
+    }
+
+    @media print {
+      body * { visibility: hidden; }
+
+      #printSection, #printSection * {
+        visibility: visible;
+      }
+
+      #printSection {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      th, td {
+        border: 1px solid #000;
+        padding: 8px;
+      }
+    }
+  </style>
+</head>
+
+<body class="min-h-screen p-6">
+
+<div class="max-w-7xl mx-auto">
+
+  <!-- Header -->
+  <div class="flex justify-between items-center mb-6">
+    <div>
+      <h1 class="text-2xl font-bold">All Devices</h1>
+      <p class="text-sm text-slate-500">View and manage devices</p>
+    </div>
+
+    <div class="flex gap-2">
+      <button onclick="printTable()" class="bg-blue-50 px-3 py-1 rounded">🖨️ Print</button>
+      <button onclick="downloadCSV()" class="bg-blue-50 px-3 py-1 rounded">📄 CSV</button>
+      <button onclick="downloadPDF()" class="bg-blue-50 px-3 py-1 rounded">📥 PDF</button>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="glass-card p-4 rounded-xl mb-6 flex gap-4">
+
+    <input id="searchInput" oninput="applyFilters()" type="text"
+      placeholder="Search device..."
+      class="w-full p-2 border rounded-lg">
+
+    <select id="statusFilter" onchange="applyFilters()" class="p-2 border rounded-lg">
+      <option value="">All Status</option>
+      <option value="ACTIVE">Active</option>
+      <option value="INACTIVE">Inactive</option>
+    </select>
+
+  </div>
+
+  <!-- Table -->
+  <div id="printSection">
+    <div class="glass-card rounded-xl overflow-hidden">
+
+      <table class="w-full text-left">
+        <thead class="bg-gray-100">
+          <tr>
+            <th class="p-3">Device Code</th>
+            <th class="p-3">Device Name</th>
+            <th class="p-3">Type</th>
+            <th class="p-3">Lab</th>
+            <th class="p-3">Status</th>
+          </tr>
+        </thead>
+
+        <tbody id="devicesTable"></tbody>
+      </table>
+
+      <div id="emptyState" class="hidden text-center py-10 text-gray-400">
+        No devices found
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<script>
+
+let allDevices = [];
+
+window.onload = loadDevices;
+
+// 🔹 Load Devices
+async function loadDevices() {
+  try {
+    const { data } = await supabaseClient.auth.getSession();
+    const token = data.session?.access_token;
+
+    const res = await fetch("https://pbcnboxtlrymczzpppyl.supabase.co/functions/v1/get-lab-architecture", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + token
+      },
+      body: JSON.stringify({ role: "ADMIN" })
+    });
+
+    const result = await res.json();
+
+    if (!result.success) {
+      console.error(result.error);
+      return;
+    }
+
+    let devices = [];
+
+    // 🔥 Flatten data
+    if (result.data.departments) {
+      result.data.departments.forEach(dep => {
+        dep.labs.forEach(lab => {
+          lab.devices.forEach(d => {
+            devices.push({ ...d, lab_name: lab.lab_name });
+          });
+        });
+      });
+    } else if (result.data.labs) {
+      result.data.labs.forEach(lab => {
+        lab.devices.forEach(d => {
+          devices.push({ ...d, lab_name: lab.lab_name });
+        });
+      });
+    }
+
+    allDevices = devices;
+    renderTable(devices);
+
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+// 🔹 Render Table
+function renderTable(data) {
+  const table = document.getElementById("devicesTable");
+  const empty = document.getElementById("emptyState");
+
+  table.innerHTML = "";
+
+  if (!data.length) {
+    empty.classList.remove("hidden");
+    return;
+  } else {
+    empty.classList.add("hidden");
+  }
+
+  data.forEach(d => {
+    table.innerHTML += `
+      <tr class="table-row border-b">
+        <td class="p-3">${d.device_code}</td>
+        <td class="p-3">${d.device_name}</td>
+        <td class="p-3">${d.device_type}</td>
+        <td class="p-3">${d.lab_name}</td>
+        <td class="p-3">${getStatusBadge(d.is_active)}</td>
+      </tr>
+    `;
+  });
+}
+
+// 🔹 Status Badge
+function getStatusBadge(active) {
+  return active
+    ? `<span class="bg-green-100 text-green-600 px-2 py-1 rounded text-xs">Active</span>`
+    : `<span class="bg-red-100 text-red-600 px-2 py-1 rounded text-xs">Inactive</span>`;
+}
+
+// 🔹 Filters
+function applyFilters() {
+  const search = document.getElementById("searchInput").value.toLowerCase();
+  const status = document.getElementById("statusFilter").value;
+
+  const filtered = allDevices.filter(d => {
+    return (
+      d.device_name.toLowerCase().includes(search) ||
+      d.device_code.toLowerCase().includes(search)
+    ) &&
+    (status === "" ||
+      (status === "ACTIVE" && d.is_active) ||
+      (status === "INACTIVE" && !d.is_active));
+  });
+
+  renderTable(filtered);
+}
+
+// 🔹 PRINT
+function printTable() {
+  window.print();
+}
+
+// 🔹 CSV
+function downloadCSV() {
+  let csv = [["Code","Name","Type","Lab","Status"]];
+
+  allDevices.forEach(d => {
+    csv.push([
+      d.device_code,
+      d.device_name,
+      d.device_type,
+      d.lab_name,
+      d.is_active ? "Active" : "Inactive"
+    ]);
+  });
+
+  const blob = new Blob([csv.map(e => e.join(",")).join("\n")]);
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "devices.csv";
+  a.click();
+}
+
+// 🔹 PDF
+function downloadPDF() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+
+  doc.text("Devices Report", 14, 15);
+
+  const rows = allDevices.map(d => [
+    d.device_code,
+    d.device_name,
+    d.device_type,
+    d.lab_name,
+    d.is_active ? "Active" : "Inactive"
+  ]);
+
+  doc.autoTable({
+    head: [["Code","Name","Type","Lab","Status"]],
+    body: rows,
+    startY: 20
+  });
+
+  doc.save("devices.pdf");
+}
+
+</script>
+
+</body>
+</html>

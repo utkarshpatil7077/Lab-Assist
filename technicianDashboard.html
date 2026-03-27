@@ -4,6 +4,8 @@
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Technician Dashboard - LabAssist</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- 1️⃣ Supabase library (CDN) -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
 <script src="/javascript/supabase.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
@@ -60,26 +62,28 @@
                 Dashboard
             </a>
 <a class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg sidebar-link-inactive hover:bg-[var(--sidebar-hover)] transition-colors font-medium" href="#devices" 
-    onclick="setActive(this); showTab('devices')">
+    onclick="setActive(this); showTab('devices'); gotoAssignedInfo()">
 <span class="material-symbols-outlined text-sm">devices</span>
                 Assigned Devices
             </a>
-<a class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg sidebar-link-inactive hover:bg-[var(--sidebar-hover)] transition-colors font-medium" href="#">
+<a class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg sidebar-link-inactive hover:bg-[var(--sidebar-hover)] transition-colors font-medium" href="#serviceRequests"
+    onclick="setActive(this); showTab('serviceRequests'); loadRequests()">
 <span class="material-symbols-outlined text-sm">handyman</span>
                 Service Requests
             </a>
-<a class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg sidebar-link-inactive hover:bg-[var(--sidebar-hover)] transition-colors font-medium" href="#">
+<a class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg sidebar-link-inactive hover:bg-[var(--sidebar-hover)] transition-colors font-medium" href="#maintenanceHistory"
+    onclick="setActive(this); showTab('maintenanceHistory'); loadMaintenanceHistory()">
 <span class="material-symbols-outlined text-sm">history</span>
                 Maintenance History
             </a>
-<a class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg sidebar-link-inactive hover:bg-[var(--sidebar-hover)] transition-colors font-medium" href="#">
+<a class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg sidebar-link-inactive hover:bg-[var(--sidebar-hover)] transition-colors font-medium" href="#technicianProfileTab"
+    onclick="setActive(this); showTab('technicianProfileTab'); loadProfile()">
 <span class="material-symbols-outlined text-sm">person</span>
                 Profile
             </a>
 </nav>
 <div class="p-4 border-t border-[var(--sidebar-border)]">
-<button class="flex items-center gap-3 px-4 py-3 w-full rounded-lg text-red-600 hover:bg-red-500/10 transition-colors font-medium">
-<span class="material-symbols-outlined text-sm">logout</span>
+<button class="flex items-center gap-3 px-4 py-3 w-full rounded-lg text-red-600 hover:bg-red-500/10 transition-colors font-medium" onclick="logoutUser()">
                 Logout
             </button>
 </div>
@@ -90,14 +94,14 @@
 <h2 class="text-lg font-semibold text-[var(--text-primary)]">Technician Dashboard</h2>
 </div>
 <div class="flex items-center gap-6">
-<button class="relative text-slate-500 hover:text-[var(--accent-blue)] transition-colors">
+<button class="hidden relative text-slate-500 hover:text-[var(--accent-blue)] transition-colors">
 <span class="material-symbols-outlined">notifications</span>
 <span class="absolute top-0 right-0 w-2 h-2 bg-[var(--accent-red)] rounded-full border-2 border-white"></span>
 </button>
 <div class="flex items-center gap-3 cursor-pointer pl-6 border-l border-slate-200">
 <div class="text-right">
-<p class="text-xs font-bold text-[var(--text-primary)]">Alex Rivera</p>
-<p class="text-[10px] text-slate-500 uppercase tracking-tighter">Senior Technician</p>
+<p id="userName" class="text-xs font-bold text-[var(--text-primary)]"></p>
+<p class="text-[10px] text-slate-500 uppercase tracking-tighter">Technician</p>
 </div>
 <div class="w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center border border-blue-200">
 <span class="material-symbols-outlined text-[var(--accent-blue)] text-xl">engineering</span>
@@ -105,261 +109,449 @@
 </div>
 </div>
 </header>
-<div id="dashboard" class="hidden p-8 space-y-8">
-<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-<div class="bg-white border border-[var(--border-color)] p-6 rounded-xl card-shadow">
-<div class="flex justify-between items-start">
-<div>
-<p class="text-slate-500 text-sm font-medium">Active Tasks</p>
-<h3 class="text-3xl font-bold mt-1 text-[var(--text-primary)]">12</h3>
-</div>
-<div class="p-3 bg-blue-50 rounded-lg">
-<span class="material-symbols-outlined text-[var(--accent-blue)]">assignment</span>
-</div>
-</div>
-<div class="mt-4 flex items-center text-xs text-emerald-600 font-medium">
-<span class="material-symbols-outlined text-xs mr-1">task_alt</span>
-<span>4 completed today</span>
-</div>
-</div>
-<div class="bg-white border border-[var(--border-color)] p-6 rounded-xl card-shadow">
-<div class="flex justify-between items-start">
-<div>
-<p class="text-slate-500 text-sm font-medium">Assigned Devices</p>
-<h3 class="text-3xl font-bold mt-1 text-[var(--text-primary)]">48</h3>
-</div>
-<div class="p-3 bg-indigo-50 rounded-lg">
-<span class="material-symbols-outlined text-indigo-600">precision_manufacturing</span>
-</div>
-</div>
-<div class="mt-4 flex items-center text-xs text-slate-400">
-<span>Across 3 lab locations</span>
-</div>
-</div>
-<div class="bg-white border border-[var(--border-color)] p-6 rounded-xl card-shadow border-l-4 border-l-red-500">
-<div class="flex justify-between items-start">
-<div>
-<p class="text-slate-500 text-sm font-medium">Critical Alerts</p>
-<h3 class="text-3xl font-bold mt-1 text-[var(--text-primary)]">3</h3>
-</div>
-<div class="p-3 bg-red-50 rounded-lg">
-<span class="material-symbols-outlined text-[var(--accent-red)]">error</span>
-</div>
-</div>
-<div class="mt-4 flex items-center text-xs text-[var(--accent-red)] font-semibold uppercase tracking-wider">
-<span class="material-symbols-outlined text-xs mr-1">warning</span>
-<span>Immediate action required</span>
-</div>
-</div>
-</div>
-<div class="bg-white border border-[var(--border-color)] rounded-xl card-shadow overflow-hidden">
-<div class="p-6 border-b border-[var(--border-color)] flex justify-between items-center">
-<h3 class="text-lg font-bold text-[var(--text-primary)]">Recent Maintenance Activity</h3>
-<button class="text-[var(--accent-blue)] text-sm font-semibold hover:underline px-3 py-1 bg-blue-50 rounded-md">Export Log</button>
-</div>
-<div class="overflow-x-auto">
-<table class="w-full text-left">
-<thead class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider">
-<tr>
-<th class="px-6 py-4 font-semibold">Device Name</th>
-<th class="px-6 py-4 font-semibold">Lab Location</th>
-<th class="px-6 py-4 font-semibold text-center">Status</th>
-<th class="px-6 py-4 font-semibold text-right">Last Update</th>
-</tr>
-</thead>
-<tbody class="divide-y divide-slate-100">
-<tr class="hover:bg-slate-50/50 transition-colors">
-<td class="px-6 py-4">
-<div class="flex items-center gap-3">
-<span class="material-symbols-outlined text-slate-400">biotech</span>
-<div>
-<p class="text-sm font-bold text-[var(--text-primary)]">Centrifuge model X-1</p>
-<p class="text-xs text-slate-500">SN: 88293-22</p>
-</div>
-</div>
-</td>
-<td class="px-6 py-4 text-sm text-slate-600">Chemistry Lab 02</td>
-<td class="px-6 py-4 text-center">
-<span class="px-3 py-1 text-[10px] font-bold rounded-full bg-emerald-100 text-emerald-700 border border-emerald-200 uppercase">Completed</span>
-</td>
-<td class="px-6 py-4 text-right text-xs text-slate-400">10 mins ago</td>
-</tr>
-<tr class="hover:bg-slate-50/50 transition-colors">
-<td class="px-6 py-4">
-<div class="flex items-center gap-3">
-<span class="material-symbols-outlined text-slate-400">air</span>
-<div>
-<p class="text-sm font-bold text-[var(--text-primary)]">Incubator Pro 500</p>
-<p class="text-xs text-slate-500">SN: 44102-11</p>
-</div>
-</div>
-</td>
-<td class="px-6 py-4 text-sm text-slate-600">Bio-Safety Wing B</td>
-<td class="px-6 py-4 text-center">
-<span class="px-3 py-1 text-[10px] font-bold rounded-full bg-blue-100 text-blue-700 border border-blue-200 uppercase">In Progress</span>
-</td>
-<td class="px-6 py-4 text-right text-xs text-slate-400">45 mins ago</td>
-</tr>
-<tr class="hover:bg-slate-50/50 transition-colors">
-<td class="px-6 py-4">
-<div class="flex items-center gap-3">
-<span class="material-symbols-outlined text-slate-400">visibility</span>
-<div>
-<p class="text-sm font-bold text-[var(--text-primary)]">Optical Microscope</p>
-<p class="text-xs text-slate-500">SN: 12005-99</p>
-</div>
-</div>
-</td>
-<td class="px-6 py-4 text-sm text-slate-600">Physics Wing</td>
-<td class="px-6 py-4 text-center">
-<span class="px-3 py-1 text-[10px] font-bold rounded-full bg-amber-100 text-amber-700 border border-amber-200 uppercase">Scheduled</span>
-</td>
-<td class="px-6 py-4 text-right text-xs text-slate-400">2 hours ago</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
+<div id="dashboard" class="tab p-8 space-y-8">
+
+  <!-- 🔹 Stats Cards -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+    <!-- Assigned Labs -->
+    <div class="bg-white border border-[var(--border-color)] p-6 rounded-xl card-shadow">
+      <div class="flex justify-between items-start">
+        <div>
+          <p class="text-slate-500 text-sm font-medium">Assigned Labs</p>
+          <h3 id="stat_labs" class="text-3xl font-bold mt-1 text-[var(--text-primary)]">0</h3>
+        </div>
+        <div class="p-3 bg-purple-50 rounded-lg">
+          <span class="material-symbols-outlined text-purple-600">science</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Active Labs -->
+    <div class="bg-white border border-[var(--border-color)] p-6 rounded-xl card-shadow">
+      <div class="flex justify-between items-start">
+        <div>
+          <p class="text-slate-500 text-sm font-medium">Active Labs</p>
+          <h3 id="stat_activeLabs" class="text-3xl font-bold mt-1 text-[var(--text-primary)]">0</h3>
+        </div>
+        <div class="p-3 bg-green-50 rounded-lg">
+          <span class="material-symbols-outlined text-green-600">check_circle</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Under Maintenance -->
+    <div class="bg-white border border-[var(--border-color)] p-6 rounded-xl card-shadow border-l-4 border-l-yellow-500">
+      <div class="flex justify-between items-start">
+        <div>
+          <p class="text-slate-500 text-sm font-medium">Under Maintenance</p>
+          <h3 id="stat_maintenance" class="text-3xl font-bold mt-1 text-[var(--text-primary)]">0</h3>
+        </div>
+        <div class="p-3 bg-yellow-50 rounded-lg">
+          <span class="material-symbols-outlined text-yellow-600">build</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 🔹 Assigned Labs Table -->
+  <div class="bg-white border border-[var(--border-color)] rounded-xl card-shadow overflow-hidden">
+
+    <div class="p-6 border-b border-[var(--border-color)] flex justify-between items-center">
+      <h3 class="text-lg font-bold text-[var(--text-primary)]">Assigned Labs</h3>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="w-full text-left">
+        <thead class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider">
+          <tr>
+            <th class="px-6 py-4 font-semibold">Lab Name</th>
+            <th class="px-6 py-4 font-semibold">Code</th>
+            <th class="px-6 py-4 font-semibold">Devices</th>
+            <th class="px-6 py-4 font-semibold text-center">Status</th>
+          </tr>
+        </thead>
+        <tbody id="techLabsTable" class="divide-y divide-slate-100"></tbody>
+      </table>
+    </div>
+
+    <div id="techEmpty" class="hidden text-center py-6 text-gray-400">
+      No labs assigned
+    </div>
+
+  </div>
+
 </div>
 
-<div id="devices" class="p-8 space-y-6">
-<div class="bg-white p-4 rounded-xl border border-[var(--border-color)] card-shadow flex flex-wrap gap-4 items-center justify-between">
-<div class="relative flex-1 min-w-[300px]">
-<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xl">search</span>
-<input class="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-[var(--accent-blue)] focus:border-transparent text-sm" placeholder="Search by device name, serial number, or location..." type="text"/>
+<div id="devices" class="hidden tab p-8 space-y-8">
+
+  <h2 class="text-2xl font-bold">Assigned Devices</h2>
+
+  <!-- 🔹 Stats Cards -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+    <!-- Total Devices -->
+    <div class="bg-white border border-[var(--border-color)] p-6 rounded-xl card-shadow">
+      <div class="flex justify-between items-start">
+        <div>
+          <p class="text-slate-500 text-sm font-medium">Total Devices</p>
+          <h3 id="stat_devices" class="text-3xl font-bold mt-1 text-[var(--text-primary)]">0</h3>
+        </div>
+        <div class="p-3 bg-blue-50 rounded-lg">
+          <span class="material-symbols-outlined text-blue-600">devices</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Active Devices -->
+    <div class="bg-white border border-[var(--border-color)] p-6 rounded-xl card-shadow">
+      <div class="flex justify-between items-start">
+        <div>
+          <p class="text-slate-500 text-sm font-medium">Active Devices</p>
+          <h3 id="stat_activeDevices" class="text-3xl font-bold mt-1 text-[var(--text-primary)]">0</h3>
+        </div>
+        <div class="p-3 bg-green-50 rounded-lg">
+          <span class="material-symbols-outlined text-green-600">check_circle</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Inactive Devices -->
+    <div class="bg-white border border-[var(--border-color)] p-6 rounded-xl card-shadow border-l-4 border-l-red-500">
+      <div class="flex justify-between items-start">
+        <div>
+          <p class="text-slate-500 text-sm font-medium">Inactive Devices</p>
+          <h3 id="stat_inactiveDevices" class="text-3xl font-bold mt-1 text-[var(--text-primary)]">0</h3>
+        </div>
+        <div class="p-3 bg-red-50 rounded-lg">
+          <span class="material-symbols-outlined text-red-600">power_off</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 🔹 Devices Table -->
+  <div class="bg-white border border-[var(--border-color)] rounded-xl card-shadow overflow-hidden">
+
+    <div class="p-6 border-b border-[var(--border-color)] flex justify-between items-center">
+      <h3 class="text-lg font-bold text-[var(--text-primary)]">My Devices</h3>
+      <button onclick="viewAllDevices()" class="text-[var(--accent-blue)] text-sm font-semibold hover:underline px-3 py-1 bg-blue-50 rounded-md">
+        View All Devices
+      </button>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="w-full text-left">
+        <thead class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider">
+          <tr>
+            <th class="px-6 py-4 font-semibold">Device Name</th>
+            <th class="px-6 py-4 font-semibold">Code</th>
+            <th class="px-6 py-4 font-semibold">Type</th>
+            <th class="px-6 py-4 font-semibold">Lab</th>
+            <th class="px-6 py-4 font-semibold text-center">Status</th>
+          </tr>
+        </thead>
+        <tbody id="devicesTable" class="divide-y divide-slate-100"></tbody>
+      </table>
+    </div>
+
+    <div id="devicesEmpty" class="hidden text-center py-6 text-gray-400">
+      No devices assigned
+    </div>
+
+  </div>
+
 </div>
-<div class="flex items-center gap-3">
-<select class="text-sm border-slate-200 rounded-lg focus:ring-2 focus:ring-[var(--accent-blue)] py-2 pl-3 pr-8">
-<option>All Locations</option>
-<option>Chemistry Lab 02</option>
-<option>Bio-Safety Wing B</option>
-<option>Physics Wing</option>
-</select>
-<select class="text-sm border-slate-200 rounded-lg focus:ring-2 focus:ring-[var(--accent-blue)] py-2 pl-3 pr-8">
-<option>All Statuses</option>
-<option>Operational</option>
-<option>Needs Calibration</option>
-<option>Maintenance Due</option>
-</select>
-<button class="flex items-center gap-2 px-4 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors text-sm font-medium">
-<span class="material-symbols-outlined text-lg">filter_list</span>
-                        More Filters
-                    </button>
+
+<div id="serviceRequests" class="tab hidden p-8 space-y-6">
+
+  <!-- 🔹 Header -->
+  <div class="flex justify-between items-center">
+    <div>
+      <h2 class="text-2xl font-bold text-[var(--text-primary)]">Service Requests</h2>
+      <p class="text-sm text-slate-500">Manage assigned complaints</p>
+    </div>
+  </div>
+
+  <!-- 🔹 Cards -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+    <!-- Pending -->
+    <div class="bg-white border border-[var(--border-color)] p-6 rounded-xl card-shadow">
+      <div class="flex justify-between">
+        <div>
+          <p class="text-sm text-slate-500">Pending Complaints</p>
+          <h3 id="pendingCount" class="text-3xl font-bold mt-1">0</h3>
+        </div>
+        <div class="p-3 bg-yellow-50 rounded-lg">
+          <span class="material-symbols-outlined text-yellow-600">schedule</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- In Progress -->
+    <div class="bg-white border border-[var(--border-color)] p-6 rounded-xl card-shadow">
+      <div class="flex justify-between">
+        <div>
+          <p class="text-sm text-slate-500">In Progress</p>
+          <h3 id="progressCount" class="text-3xl font-bold mt-1">0</h3>
+        </div>
+        <div class="p-3 bg-blue-50 rounded-lg">
+          <span class="material-symbols-outlined text-blue-600">build</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Critical -->
+    <div class="bg-white border border-[var(--border-color)] p-6 rounded-xl card-shadow border-l-4 border-l-red-500">
+      <div class="flex justify-between">
+        <div>
+          <p class="text-sm text-slate-500">Critical Issues</p>
+          <h3 id="criticalCount" class="text-3xl font-bold mt-1">0</h3>
+        </div>
+        <div class="p-3 bg-red-50 rounded-lg">
+          <span class="material-symbols-outlined text-red-600">priority_high</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 🔹 Table -->
+  <div class="bg-white border border-[var(--border-color)] rounded-xl card-shadow overflow-hidden">
+
+    <div class="p-6 border-b flex justify-between items-center">
+      <h3 class="text-lg font-bold">Recent Requests</h3>
+      <button onclick="gotoAllRequests()" class="text-[var(--accent-blue)] text-sm font-semibold hover:underline px-3 py-1 bg-blue-50 rounded-md">
+        View All Requests
+      </button>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="w-full text-left">
+        <thead class="bg-slate-50 text-xs uppercase text-slate-500">
+          <tr>
+            <th class="px-6 py-4">Title</th>
+            <th class="px-6 py-4">Lab</th>
+            <th class="px-6 py-4">Priority</th>
+            <th class="px-6 py-4">Status</th>
+            <th class="px-6 py-4 text-right">Date</th>
+          </tr>
+        </thead>
+
+        <tbody id="requestTable" class="divide-y"></tbody>
+      </table>
+    </div>
+
+  </div>
+
 </div>
+
+<div id="maintenanceHistory" class="tab hidden p-8 space-y-6">
+
+  <!-- Header -->
+  <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+    <div>
+      <h2 class="text-2xl font-bold text-[var(--text-primary)]">Maintenance History</h2>
+      <p class="text-sm text-slate-500">Track completed maintenance and service records</p>
+    </div>
+  </div>
+
+  <!-- Cards -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+    <!-- Total Requests -->
+    <div class="bg-white border border-[var(--border-color)] p-6 rounded-xl card-shadow">
+      <div class="flex justify-between items-start">
+        <div>
+          <p class="text-slate-500 text-sm font-medium">Total Requests</p>
+          <h3 id="totalHistory" class="text-3xl font-bold mt-1 text-[var(--text-primary)]"></h3>
+        </div>
+        <div class="p-3 bg-blue-50 rounded-lg">
+          <span class="material-symbols-outlined text-[var(--accent-blue)]">history</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Resolved -->
+    <div class="bg-white border border-[var(--border-color)] p-6 rounded-xl card-shadow">
+      <div class="flex justify-between items-start">
+        <div>
+          <p class="text-slate-500 text-sm font-medium">Resolved</p>
+          <h3 id="resolvedCount" class="text-3xl font-bold mt-1 text-[var(--text-primary)]"></h3>
+        </div>
+        <div class="p-3 bg-green-50 rounded-lg">
+          <span class="material-symbols-outlined text-green-600">check_circle</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Closed -->
+    <div class="bg-white border border-[var(--border-color)] p-6 rounded-xl card-shadow border-l-4 border-l-indigo-500">
+      <div class="flex justify-between items-start">
+        <div>
+          <p class="text-slate-500 text-sm font-medium">Closed</p>
+          <h3 id="closedCount" class="text-3xl font-bold mt-1 text-[var(--text-primary)]"></h3>
+        </div>
+        <div class="p-3 bg-indigo-50 rounded-lg">
+          <span class="material-symbols-outlined text-indigo-600">task_alt</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Table -->
+  <div class="bg-white border border-[var(--border-color)] rounded-xl card-shadow overflow-hidden">
+
+    <!-- Table Header -->
+    <div class="p-6 border-b border-[var(--border-color)] flex justify-between items-center">
+      <h3 class="text-lg font-bold text-[var(--text-primary)]">Maintenance Records</h3>
+
+      <button onclick="gotoAllHistory()" 
+        class="text-[var(--accent-blue)] text-sm font-semibold hover:underline px-3 py-1 bg-blue-50 rounded-md">
+        View Full History
+      </button>
+    </div>
+
+    <!-- Table -->
+    <div class="overflow-x-auto">
+      <table class="w-full text-left">
+
+        <thead class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider">
+          <tr>
+            <th class="px-6 py-4 font-semibold">Title</th>
+            <th class="px-6 py-4 font-semibold">Lab</th>
+            <th class="px-6 py-4 font-semibold">Technician</th>
+            <th class="px-6 py-4 font-semibold text-center">Status</th>
+            <th class="px-6 py-4 font-semibold text-right">Completed Date</th>
+          </tr>
+        </thead>
+
+        <tbody id="historyTable" class="divide-y divide-slate-100">
+        </tbody>
+
+      </table>
+    </div>
+
+  </div>
+
 </div>
-<div class="bg-white border border-[var(--border-color)] rounded-xl card-shadow overflow-hidden">
-<div class="p-6 border-b border-[var(--border-color)] flex justify-between items-center">
-<div>
-<h3 class="text-lg font-bold text-[var(--text-primary)]">Equipment List</h3>
-<p class="text-xs text-slate-500 mt-1">Showing 48 assigned devices</p>
+
+<div id="technicianProfileTab" class="tab p-8 hidden space-y-6">
+
+  <h2 class="text-2xl font-bold">Technician Profile</h2>
+
+  <!-- Top Section -->
+  <div class="bg-white p-6 rounded-xl shadow flex flex-col md:flex-row items-center gap-6">
+
+    <div id="tech_avatar" class="w-20 h-20 bg-blue-100 text-blue-600 flex items-center justify-center rounded-full text-3xl font-bold">
+      T
+    </div>
+
+    <div>
+      <h3 id="t_name" class="text-xl font-semibold"></h3>
+      <p id="t_email" class="text-sm text-slate-500"></p>
+      <p class="text-xs text-slate-400 mt-1">Technician Account</p>
+    </div>
+
+  </div>
+
+  <!-- Info Section -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+    <!-- Basic Info -->
+    <div class="bg-white p-6 rounded-xl shadow space-y-3">
+      <h3 class="font-semibold text-slate-600 mb-2">Technician Information</h3>
+
+      <div>
+        <span class="text-slate-400 text-sm">Expertise Level:</span> 
+        <span id="t_level"></span>
+      </div>
+
+      <div>
+        <span class="text-slate-400 text-sm">Assigned Department:</span> 
+        <span id="t_department"></span>
+      </div>
+
+      <div>
+        <span class="text-slate-400 text-sm">Assigned Labs:</span> 
+        <span id="t_labs"></span>
+      </div>
+    </div>
+
+    <!-- Role Insights -->
+    <div class="bg-white p-6 rounded-xl shadow space-y-3">
+      <h3 class="font-semibold text-slate-600 mb-2">Technician Privileges</h3>
+
+      <div>✔ View Assigned Complaints</div>
+      <div>✔ Update Complaint Status</div>
+      <div>✔ Upload Fixed Images</div>
+      <div>✔ Receive Notifications</div>
+    </div>
+
+  </div>
+
+  <!-- Insights -->
+  <div class="bg-white p-6 rounded-xl shadow">
+    <h3 class="font-semibold text-slate-600 mb-4">Insights</h3>
+
+    <ul class="list-disc ml-5 text-sm text-slate-600 space-y-2">
+      <li id="t_insight1"></li>
+      <li id="t_insight2"></li>
+      <li id="t_insight3"></li>
+    </ul>
+  </div>
+
+  <!-- Actions -->
+  <div class="flex gap-3">
+    <button onclick="logoutUser()" class="px-4 py-2 bg-red-500 text-white rounded-lg">Logout</button>
+  </div>
+
 </div>
-<button class="text-[var(--accent-blue)] text-sm font-semibold hover:underline px-3 py-1 bg-blue-50 rounded-md">Export Inventory</button>
-</div>
-<div class="overflow-x-auto">
-<table class="w-full text-left">
-<thead class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider">
-<tr>
-<th class="px-6 py-4 font-semibold">Device Name</th>
-<th class="px-6 py-4 font-semibold">Serial Number</th>
-<th class="px-6 py-4 font-semibold">Lab Location</th>
-<th class="px-6 py-4 font-semibold">Last Maintenance</th>
-<th class="px-6 py-4 font-semibold">Status</th>
-<th class="px-6 py-4 font-semibold text-right">Action</th>
-</tr>
-</thead>
-<tbody class="divide-y divide-slate-100">
-<tr class="hover:bg-slate-50/50 transition-colors">
-<td class="px-6 py-4">
-<div class="flex items-center gap-3">
-<div class="w-8 h-8 rounded bg-blue-50 flex items-center justify-center">
-<span class="material-symbols-outlined text-[var(--accent-blue)] text-lg">biotech</span>
-</div>
-<span class="text-sm font-bold text-[var(--text-primary)]">Centrifuge model X-1</span>
-</div>
-</td>
-<td class="px-6 py-4 text-sm text-slate-600 font-mono">88293-22</td>
-<td class="px-6 py-4 text-sm text-slate-600">Chemistry Lab 02</td>
-<td class="px-6 py-4 text-sm text-slate-600">Oct 12, 2023</td>
-<td class="px-6 py-4">
-<span class="px-3 py-1 text-[10px] font-bold rounded-full bg-emerald-100 text-emerald-700 border border-emerald-200 uppercase">Operational</span>
-</td>
-<td class="px-6 py-4 text-right">
-<button class="text-[var(--accent-blue)] text-xs font-bold hover:text-[var(--corporate-blue)] uppercase tracking-wide">View Details</button>
-</td>
-</tr>
-<tr class="hover:bg-slate-50/50 transition-colors">
-<td class="px-6 py-4">
-<div class="flex items-center gap-3">
-<div class="w-8 h-8 rounded bg-indigo-50 flex items-center justify-center">
-<span class="material-symbols-outlined text-indigo-600 text-lg">air</span>
-</div>
-<span class="text-sm font-bold text-[var(--text-primary)]">Incubator Pro 500</span>
-</div>
-</td>
-<td class="px-6 py-4 text-sm text-slate-600 font-mono">44102-11</td>
-<td class="px-6 py-4 text-sm text-slate-600">Bio-Safety Wing B</td>
-<td class="px-6 py-4 text-sm text-slate-600">Nov 05, 2023</td>
-<td class="px-6 py-4">
-<span class="px-3 py-1 text-[10px] font-bold rounded-full bg-amber-100 text-amber-700 border border-amber-200 uppercase">Needs Calibration</span>
-</td>
-<td class="px-6 py-4 text-right">
-<button class="text-[var(--accent-blue)] text-xs font-bold hover:text-[var(--corporate-blue)] uppercase tracking-wide">View Details</button>
-</td>
-</tr>
-<tr class="hover:bg-slate-50/50 transition-colors">
-<td class="px-6 py-4">
-<div class="flex items-center gap-3">
-<div class="w-8 h-8 rounded bg-slate-50 flex items-center justify-center">
-<span class="material-symbols-outlined text-slate-500 text-lg">visibility</span>
-</div>
-<span class="text-sm font-bold text-[var(--text-primary)]">Optical Microscope</span>
-</div>
-</td>
-<td class="px-6 py-4 text-sm text-slate-600 font-mono">12005-99</td>
-<td class="px-6 py-4 text-sm text-slate-600">Physics Wing</td>
-<td class="px-6 py-4 text-sm text-slate-600">Aug 20, 2023</td>
-<td class="px-6 py-4">
-<span class="px-3 py-1 text-[10px] font-bold rounded-full bg-red-100 text-red-700 border border-red-200 uppercase">Maintenance Due</span>
-</td>
-<td class="px-6 py-4 text-right">
-<button class="text-[var(--accent-blue)] text-xs font-bold hover:text-[var(--corporate-blue)] uppercase tracking-wide">View Details</button>
-</td>
-</tr>
-<tr class="hover:bg-slate-50/50 transition-colors">
-<td class="px-6 py-4">
-<div class="flex items-center gap-3">
-<div class="w-8 h-8 rounded bg-blue-50 flex items-center justify-center">
-<span class="material-symbols-outlined text-[var(--accent-blue)] text-lg">science</span>
-</div>
-<span class="text-sm font-bold text-[var(--text-primary)]">Mass Spectrometer V2</span>
-</div>
-</td>
-<td class="px-6 py-4 text-sm text-slate-600 font-mono">99201-44</td>
-<td class="px-6 py-4 text-sm text-slate-600">Chemistry Lab 02</td>
-<td class="px-6 py-4 text-sm text-slate-600">Dec 01, 2023</td>
-<td class="px-6 py-4">
-<span class="px-3 py-1 text-[10px] font-bold rounded-full bg-emerald-100 text-emerald-700 border border-emerald-200 uppercase">Operational</span>
-</td>
-<td class="px-6 py-4 text-right">
-<button class="text-[var(--accent-blue)] text-xs font-bold hover:text-[var(--corporate-blue)] uppercase tracking-wide">View Details</button>
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-<div class="px-6 py-4 bg-slate-50 border-t border-[var(--border-color)] flex items-center justify-between">
-<span class="text-xs text-slate-500 font-medium">Page 1 of 5</span>
-<div class="flex gap-2">
-<button class="p-1 rounded border border-slate-200 bg-white text-slate-400 cursor-not-allowed">
-<span class="material-symbols-outlined text-sm">chevron_left</span>
-</button>
-<button class="p-1 rounded border border-slate-200 bg-white text-slate-600 hover:bg-slate-50">
-<span class="material-symbols-outlined text-sm">chevron_right</span>
-</button>
-</div>
-</div>
-</div>
+<!-- 🔹 Complaint Modal -->
+<div id="complaintModal" class="fixed inset-0 bg-black bg-opacity-40 hidden flex items-center justify-center z-50">
+
+  <div class="bg-white w-full max-w-lg rounded-xl p-6 space-y-4">
+
+    <h2 class="text-lg font-bold">Complaint Details</h2>
+
+    <div>
+      <p><strong>Title:</strong> <span id="modalTitle"></span></p>
+      <p><strong>Lab:</strong> <span id="modalLab"></span></p>
+      <p><strong>Status:</strong> <span id="modalStatus"></span></p>
+    </div>
+
+    <!-- 🔹 Status Change -->
+    <div>
+      <label class="text-sm">Change Status</label>
+      <select id="modalStatusSelect" class="w-full border p-2 rounded mt-1">
+        <option value="IN_PROGRESS">In Progress</option>
+        <option value="RESOLVED">Resolved</option>
+      </select>
+    </div>
+
+    <!-- 🔹 Reason -->
+    <div>
+      <label class="text-sm">Reason</label>
+      <textarea id="modalReason" class="w-full border p-2 rounded mt-1"></textarea>
+    </div>
+
+    <!-- 🔹 Image Upload -->
+    <div>
+      <label class="text-sm">Upload Proof (Required for Resolve)</label>
+      <input type="file" id="modalImage" class="w-full mt-1">
+    </div>
+
+    <!-- 🔹 Actions -->
+    <div class="flex justify-end gap-2">
+      <button onclick="closeModal()" class="px-4 py-2 bg-gray-200 rounded">Cancel</button>
+      <button onclick="submitUpdate()" class="px-4 py-2 bg-blue-600 text-white rounded">Update</button>
+    </div>
+
+  </div>
 </div>
 </main>
-
 </body></html>
