@@ -65,28 +65,28 @@
                 Dashboard
             </a>
 <a class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg sidebar-link-inactive hover:bg-[var(--sidebar-hover)] transition-colors font-medium" href="#devices" 
-    onclick="setActive(this); showTab('reportIssue')">
+    onclick="setActive(this); showTab('reportIssue'); loadDashboard()">
 <span class="material-symbols-outlined text-[20px] opacity-80">
         report_problem
     </span>
                 Report Issue
             </a>
 <a class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg sidebar-link-inactive hover:bg-[var(--sidebar-hover)] transition-colors font-medium" href="#myIssues"
-    onclick="setActive(this); showTab('myIssues')">
+    onclick="setActive(this); showTab('myIssues'); loadDashboard()">
 <span class="material-symbols-outlined text-[20px] opacity-80">
         assignment_late
     </span>
                 My Issues
             </a>
 <a class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg sidebar-link-inactive hover:bg-[var(--sidebar-hover)] transition-colors font-medium" href="#reportsTab"
-    onclick="setActive(this); showTab('reportsTab')">
+    onclick="setActive(this); showTab('reportsTab'); loadDashboard()">
 <span class="material-symbols-outlined text-[20px] opacity-80">
         assessment
     </span>
                 Report
             </a>
 <a class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg sidebar-link-inactive hover:bg-[var(--sidebar-hover)] transition-colors font-medium" href="#progileTab"
-    onclick="setActive(this); showTab('profileTab')">
+    onclick="setActive(this); showTab('profileTab'); loadDashboard()">
 <span class="material-symbols-outlined text-sm">person</span>
                 Profile
             </a>
@@ -409,7 +409,4 @@
 
 </div>
 </main>
-<script>
-window.onload = loadDashboard;
-</script>
 </body></html>
